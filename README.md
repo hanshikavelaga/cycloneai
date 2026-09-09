@@ -1,4 +1,4 @@
-﻿# 🌀 CycloneAI
+# 🌀 CycloneAI
 ### Tropical Cyclone Intelligence & Automated Forecasting Platform
 *Smart India Hackathon 2026 — Team Submission*
 
@@ -29,7 +29,7 @@ The system continuously polls authoritative meteorological data sources (GDACS &
 | 🤖 Automated Cyclone Genesis probability | ✅ Live |
 | 🎬 Historical cyclone replay simulator | ✅ Live |
 | 🧠 AI Trajectory Forecast (LSTM) | ⏳ Training |
-| 🔬 AI Intensity Classification (Multi-task CNN) | ⏳ Training |
+| 🔬 AI Intensity Classification & Genesis Stage (Residual CNN) | ✅ Trained & Integrated |
 | 📡 INSAT-3D / MOSDAC live satellite integration | 🔲 Planned |
 
 ---

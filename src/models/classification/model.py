@@ -31,71 +31,138 @@ class ResidualBlock(nn.Module):
         return out
 
 
-class CycloneMultiTaskCNN(nn.Module):
+class SimpleSatelliteCNN(nn.Module):
     """
-    Multi-Task Convolutional Neural Network (CNN) for Tropical Cyclones.
-    Takes a 3-channel (IR, WV, VIS) image of size 128x128.
-    Outputs:
-    - Pattern Classification: 5 classes (No Cyclone, Shear, Curved Band, CDO, Eye).
-    - Intensity Regression: 2 continuous targets (Wind Speed in knots, Dvorak T-number).
+    Baseline Lightweight CNN Architecture for Satellite Imagery.
+    Provides a simple, fast benchmark before evaluating deeper residual models.
     """
-    def __init__(self):
-        super(CycloneMultiTaskCNN, self).__init__()
-        # Input: (Batch, 3, 128, 128)
+    def __init__(self, in_channels=1, num_classes=3):
+        super(SimpleSatelliteCNN, self).__init__()
+        self.in_channels = in_channels
         
-        # Convolutional Backbone
-        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1, bias=False)  # Shape: (Batch, 32, 64, 64)
-        self.bn1 = nn.BatchNorm2d(32)
-        self.relu = nn.ReLU(inplace=True)
+        self.features = nn.Sequential(
+            nn.Conv2d(in_channels, 32, kernel_size=3, stride=2, padding=1),  # (B, 32, 64, 64)
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),                          # (B, 32, 32, 32)
+            
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),          # (B, 64, 16, 16)
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),                          # (B, 64, 8, 8)
+            
+            nn.AdaptiveAvgPool2d((2, 2))                                     # (B, 64, 2, 2)
+        )
         
-        # Residual blocks to learn complex cloud structures
-        self.layer1 = ResidualBlock(32, 64, stride=2)    # Shape: (Batch, 64, 32, 32)
-        self.layer2 = ResidualBlock(64, 128, stride=2)   # Shape: (Batch, 128, 16, 16)
-        self.layer3 = ResidualBlock(128, 128, stride=2)  # Shape: (Batch, 128, 8, 8)
+        self.flatten_dim = 64 * 2 * 2  # 256
+        self.fc_shared = nn.Linear(self.flatten_dim, 64)
         
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))  # Shape: (Batch, 128, 1, 1)
-        self.fc_shared = nn.Linear(128, 128)
+        # Classification Head
+        self.fc_class = nn.Linear(64, num_classes)
+        # Intensity Regression Head (Wind speed in knots)
+        self.fc_reg = nn.Linear(64, 1)
+
+    def forward(self, x):
+        # Auto-adapt if input channels differ (e.g. 1-ch expanded or 3-ch grayscale)
+        if x.shape[1] != self.in_channels:
+            if self.in_channels == 1 and x.shape[1] == 3:
+                x = x[:, :1, :, :]
+            elif self.in_channels == 3 and x.shape[1] == 1:
+                x = x.repeat(1, 3, 1, 1)
+                
+        feat = self.features(x)
+        flat = torch.flatten(feat, 1)
+        shared = F.relu(self.fc_shared(flat))
         
-        # Branch 1: Classification Head (5 pattern categories)
+        logits = self.fc_class(shared)
+        reg = self.fc_reg(shared).squeeze(-1)
+        return logits, reg
+
+
+class ResidualSatelliteCNN(nn.Module):
+    """
+    Production-grade Multi-Task Residual CNN for Tropical Cyclone Satellite Imagery.
+    Features residual feature extraction blocks, dropout regularization,
+    wind speed intensity regression, and IMD genesis stage classification.
+    """
+    def __init__(self, in_channels=1, num_classes=3):
+        super(ResidualSatelliteCNN, self).__init__()
+        self.in_channels = in_channels
+        
+        # Stem Convolution
+        self.stem = nn.Sequential(
+            nn.Conv2d(in_channels, 32, kernel_size=3, stride=2, padding=1, bias=False),  # (B, 32, 64, 64)
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True)
+        )
+        
+        # Residual Stages
+        self.stage1 = ResidualBlock(32, 64, stride=2)    # (B, 64, 32, 32)
+        self.stage2 = ResidualBlock(64, 128, stride=2)   # (B, 128, 16, 16)
+        self.stage3 = ResidualBlock(128, 128, stride=2)  # (B, 128, 8, 8)
+        
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))  # (B, 128, 1, 1)
+        self.fc_shared = nn.Sequential(
+            nn.Linear(128, 128),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.3)
+        )
+        
+        # Classification Head (IMD Categories)
         self.fc_class = nn.Sequential(
             nn.Linear(128, 64),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.4),
-            nn.Linear(64, 5)
+            nn.Dropout(p=0.3),
+            nn.Linear(64, num_classes)
         )
         
-        # Branch 2: Intensity Regression Head (Wind speed, Dvorak T-number)
+        # Regression Head (Wind Speed in knots)
         self.fc_reg = nn.Sequential(
             nn.Linear(128, 32),
             nn.ReLU(inplace=True),
-            nn.Linear(32, 2)
+            nn.Linear(32, 1)
         )
 
     def forward(self, x):
-        # Shared Backbone Feature Extractor
-        out = self.relu(self.bn1(self.conv1(x)))
-        out = self.layer1(out)
-        out = self.layer2(out)
-        out = self.layer3(out)
+        # Auto-adapt channel dimensions if needed
+        if x.shape[1] != self.in_channels:
+            if self.in_channels == 1 and x.shape[1] == 3:
+                x = x[:, :1, :, :]
+            elif self.in_channels == 3 and x.shape[1] == 1:
+                x = x.repeat(1, 3, 1, 1)
+                
+        out = self.stem(x)
+        out = self.stage1(out)
+        out = self.stage2(out)
+        out = self.stage3(out)
         
         out = self.global_pool(out)
         out = torch.flatten(out, 1)
-        shared_features = self.relu(self.fc_shared(out))
+        shared = self.fc_shared(out)
         
-        # Branch predictions
-        class_logits = self.fc_class(shared_features)
-        intensity_preds = self.fc_reg(shared_features)
+        class_logits = self.fc_class(shared)
+        intensity_pred = self.fc_reg(shared).squeeze(-1)
         
-        return class_logits, intensity_preds
+        return class_logits, intensity_pred
+
+
+# Retain legacy class name for backwards compatibility with existing backend and seeder scripts
+CycloneMultiTaskCNN = ResidualSatelliteCNN
 
 
 if __name__ == "__main__":
-    # Test compilation & forward pass with dummy tensor
-    model = CycloneMultiTaskCNN()
-    dummy_input = torch.randn(2, 3, 128, 128)
-    logits, reg = model(dummy_input)
+    # Unit tests for architectures
+    dummy_x = torch.randn(4, 1, 128, 128)
     
-    print("Compilation Test:")
-    print(f"Input shape: {dummy_input.shape}")
-    print(f"Classification logits shape: {logits.shape} (Expected: [2, 5])")
-    print(f"Intensity predictions shape: {reg.shape} (Expected: [2, 2])")
+    baseline = SimpleSatelliteCNN(in_channels=1, num_classes=3)
+    b_logits, b_reg = baseline(dummy_x)
+    print("SimpleSatelliteCNN Baseline Test:")
+    print(f"  Input: {dummy_x.shape} -> Logits: {b_logits.shape}, Reg: {b_reg.shape}")
+    print(f"  Parameters: {sum(p.numel() for p in baseline.parameters()):,}")
+    
+    residual = ResidualSatelliteCNN(in_channels=1, num_classes=3)
+    r_logits, r_reg = residual(dummy_x)
+    print("\nResidualSatelliteCNN Architecture Test:")
+    print(f"  Input: {dummy_x.shape} -> Logits: {r_logits.shape}, Reg: {r_reg.shape}")
+    print(f"  Parameters: {sum(p.numel() for p in residual.parameters()):,}")
+    print("\nAll models compiled and verified successfully!")

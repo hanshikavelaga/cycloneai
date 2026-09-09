@@ -1,0 +1,33 @@
+{
+  "test_samples": 18,
+  "test_seasons": [
+    2013,
+    2015
+  ],
+  "accuracy": 0.0556,
+  "balanced_accuracy": 0.5,
+  "macro_precision": 0.0208,
+  "macro_recall": 0.3333,
+  "macro_f1": 0.0392,
+  "weighted_f1": 0.0065,
+  "mae_knots": 3.52,
+  "rmse_knots": 4.33,
+  "r2_score": -1.3161,
+  "confusion_matrix": [
+    [
+      1,
+      0,
+      0
+    ],
+    [
+      15,
+      0,
+      2
+    ],
+    [
+      0,
+      0,
+      0
+    ]
+  ]
+}

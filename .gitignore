@@ -56,6 +56,8 @@ storage/processed/*
 !storage/processed/.gitkeep
 data/raw/satellite/*
 !data/raw/satellite/.gitkeep
+data/processed/satellite/*
+!data/processed/satellite/.gitkeep
 
 # Model weights
 models/**/*.pth
