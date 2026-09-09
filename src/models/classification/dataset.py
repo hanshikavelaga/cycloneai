@@ -53,16 +53,16 @@ class CycloneSatelliteDataset(Dataset):
         # Filter strictly for matched, label-verified observations
         matched_df = df[df['matched'] == True].copy()
         
-        # Zero-leakage temporal group-aware splits
+        # Zero-leakage temporal group-aware splits (Strategy B - Approved)
         if self.split == 'train':
-            # Seasons 2000 to 2010 (80.3% of data, 90 unique cyclones)
-            self.data = matched_df[(matched_df['year'] >= 2000) & (matched_df['year'] <= 2010)].copy()
+            # Seasons 2000 to 2008 (67.5% of data, 75 unique cyclones)
+            self.data = matched_df[(matched_df['year'] >= 2000) & (matched_df['year'] <= 2008)].copy()
         elif self.split == 'val':
-            # Seasons 2011 to 2012 (12.0% of data, 14 unique cyclones)
-            self.data = matched_df[(matched_df['year'] >= 2011) & (matched_df['year'] <= 2012)].copy()
+            # Seasons 2009 to 2010 (12.8% of data, 15 unique cyclones)
+            self.data = matched_df[(matched_df['year'] >= 2009) & (matched_df['year'] <= 2010)].copy()
         elif self.split == 'test':
-            # Seasons 2013 and 2015 (7.7% of data, 9 unique cyclones: Mahasen, Ashobaa, etc.)
-            self.data = matched_df[(matched_df['year'] >= 2013) & (matched_df['year'] <= 2015)].copy()
+            # Seasons 2011 to 2015 (19.7% of data, 23 unique cyclones across 4 seasons)
+            self.data = matched_df[(matched_df['year'] >= 2011) & (matched_df['year'] <= 2015)].copy()
         elif self.split == 'all':
             self.data = matched_df.copy()
         else:

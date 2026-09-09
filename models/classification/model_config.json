@@ -11,28 +11,28 @@
   "regression_target_name": "intensity_knots",
   "loss_function": "CrossEntropyLoss(sqrt_smoothed_weights) + 0.1 * MSELoss()",
   "class_weights": [
-    0.9973,
-    0.4627,
-    1.54
+    1.0352,
+    0.4705,
+    1.4942
   ],
   "normalization": "MinMax [0.0, 1.0] (HURSAT Normalized Brightness Temperature)",
   "augmentation": "Random 90-degree rotations (rot90, k in [0,1,2,3]); chirality preserved",
   "device": "cpu",
   "total_parameters": 629412,
   "training_split": {
-    "seasons": "2000-2010",
-    "samples": 188,
-    "cyclones": 90
+    "seasons": "2000-2008",
+    "samples": 158,
+    "cyclones": 75
   },
   "validation_split": {
-    "seasons": "2011-2012",
-    "samples": 28,
-    "cyclones": 14,
-    "best_epoch": 19,
-    "val_mae_knots": 4.06,
-    "val_accuracy": 0.7143,
+    "seasons": "2009-2010",
+    "samples": 30,
+    "cyclones": 15,
+    "best_epoch": 7,
+    "val_mae_knots": 3.33,
+    "val_accuracy": 0.7667,
     "val_balanced_accuracy": 0.3333,
-    "val_macro_f1": 0.2778
+    "val_macro_f1": 0.2893
   },
   "random_seed": 42
 }
