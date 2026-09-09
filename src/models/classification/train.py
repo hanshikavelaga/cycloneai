@@ -41,9 +41,10 @@ def set_seed(seed=42):
 
 def compute_class_weights(dataset):
     """
-    Computes square-root smoothed inverse-frequency class weights for cross-entropy loss.
-    Avoids pathological probability shifts caused by extreme raw inverse frequencies,
-    while providing mathematically principled penalty boosts for minority classes.
+    Computes balanced inverse-frequency class weights for cross-entropy loss:
+    w_c = N / (num_classes * N_c), normalized to mean 1.0.
+    Ensures each class contributes equal weighted loss mass (1/K) during optimization,
+    preventing majority-class gradient domination and class collapse.
     """
     counts = dataset.data['class_idx'].value_counts().sort_index()
     total = len(dataset)
@@ -52,8 +53,7 @@ def compute_class_weights(dataset):
     raw_weights = []
     for i in range(num_classes):
         c = counts.get(i, 1)
-        # Smoothed inverse frequency: sqrt(total / c)
-        w = np.sqrt(total / max(c, 1))
+        w = total / (num_classes * max(c, 1))
         raw_weights.append(w)
         
     raw_weights = np.array(raw_weights, dtype=np.float32)
@@ -62,7 +62,7 @@ def compute_class_weights(dataset):
     return torch.tensor(norm_weights, dtype=torch.float32)
 
 
-def train_one_epoch(model, dataloader, optimizer, criterion_reg, criterion_cls, device, reg_weight=0.1):
+def train_one_epoch(model, dataloader, optimizer, criterion_reg, criterion_cls, device, reg_weight=0.01):
     model.train()
     total_loss, total_loss_reg, total_loss_cls = 0.0, 0.0, 0.0
     all_preds_cls, all_targets_cls = [], []
@@ -101,7 +101,7 @@ def train_one_epoch(model, dataloader, optimizer, criterion_reg, criterion_cls, 
     return total_loss / n, total_loss_reg / n, total_loss_cls / n, acc, mae
 
 
-def evaluate(model, dataloader, criterion_reg, criterion_cls, device, reg_weight=0.1):
+def evaluate(model, dataloader, criterion_reg, criterion_cls, device, reg_weight=0.01):
     model.eval()
     total_loss, total_loss_reg, total_loss_cls = 0.0, 0.0, 0.0
     all_preds_cls, all_targets_cls = [], []
@@ -226,8 +226,8 @@ def train_model(model_name, epochs=30, batch_size=16, lr=1e-3, seed=42, save_bes
               f"Val Loss: {val_metrics['loss']:.4f} (Acc: {val_metrics['accuracy']*100:.1f}%, Bal: {val_metrics['balanced_accuracy']*100:.1f}%, F1: {val_metrics['f1']:.3f}, MAE: {val_metrics['mae']:.2f} kts)")
 
         # Scientifically principled multi-objective validation selection
-        # Rewards high Macro F1 across minority classes and low physical MAE error
-        val_score = val_metrics['f1'] - 0.05 * val_metrics['mae']
+        # Rewards high Balanced Accuracy & Macro F1 across minority classes while keeping MAE low
+        val_score = val_metrics['balanced_accuracy'] + val_metrics['f1'] - 0.05 * val_metrics['mae']
         if val_score > best_score:
             best_score = val_score
             best_epoch = epoch
