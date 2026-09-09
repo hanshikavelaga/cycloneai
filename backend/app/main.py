@@ -45,7 +45,7 @@ def shutdown_event():
     # Stop the background sync scheduler task
     stop_scheduler()
 
-STORAGE_PATH = "./storage/satellite"
+STORAGE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "storage", "satellite"))
 
 
 @app.get("/api/health")

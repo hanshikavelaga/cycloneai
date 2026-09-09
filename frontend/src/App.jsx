@@ -79,8 +79,11 @@ export default function App() {
     fetchAlerts();
     fetchSystemStatus();
     
-    // Status polling interval (10 seconds)
-    const statusInterval = setInterval(fetchSystemStatus, 10000);
+    // Status and alert polling interval (10 seconds)
+    const statusInterval = setInterval(() => {
+      fetchSystemStatus();
+      fetchAlerts();
+    }, 10000);
     return () => clearInterval(statusInterval);
   }, []);
 
@@ -146,9 +149,15 @@ export default function App() {
     try {
       const res = await fetch(`${API_BASE}/cyclones/active`);
       const data = await res.json();
+
       setActiveCyclones(data);
+
       if (data.length > 0) {
         setSelectedCycloneId(data[0].id);
+      } else {
+        // No active cyclones: clear any stale selection/details.
+        setSelectedCycloneId("");
+        setCycloneDetail(null);
       }
     } catch (e) {
       console.error("Error fetching active cyclones:", e);
@@ -464,15 +473,20 @@ export default function App() {
       const pathLine = L.polyline(pathCoordinates, { color: "#ffffff", weight: 2 });
       layersGroupRef.current.addLayer(pathLine);
     }
-    if (forecastCoordinates.length > 0) {
-      // Connect observation tail to forecast start
-      const lastObs = pathCoordinates[pathCoordinates.length - 1];
-      const combinedForecast = [lastObs, ...forecastCoordinates];
-      const forecastLine = L.polyline(combinedForecast, { 
-        color: activeTab === "replay" ? "#a855f7" : "#38bdf8", 
-        weight: 2, 
-        dashArray: "4, 8" 
+      if (forecastCoordinates.length > 0) {
+      // Connect observation tail to forecast start when observations exist.
+      // Otherwise render the forecast coordinates directly.
+      const combinedForecast =
+        pathCoordinates.length > 0
+          ? [pathCoordinates[pathCoordinates.length - 1], ...forecastCoordinates]
+          : forecastCoordinates;
+
+      const forecastLine = L.polyline(combinedForecast, {
+        color: activeTab === "replay" ? "#a855f7" : "#38bdf8",
+        weight: 2,
+        dashArray: "4, 8"
       });
+
       layersGroupRef.current.addLayer(forecastLine);
     }
 
@@ -554,6 +568,67 @@ export default function App() {
 
   const latestObs = getLatestObs();
   const activeCyclone = activeTab === "tracker" ? cycloneDetail : (replayData ? replayData.cyclone : null);
+
+  // Alert display helpers. These accept the fields returned by the backend
+  // while avoiding any hard-coded/demo alert data.
+  const getAlertSeverity = (alert) =>
+    String(alert?.severity || alert?.level || alert?.alert_level || "INFO").toUpperCase();
+
+  const getAlertTitle = (alert) =>
+    alert?.alert_type || alert?.type || alert?.title || "System Alert";
+
+  const getAlertMessage = (alert) =>
+    alert?.message || alert?.description || alert?.details || "Alert condition reported by the monitoring system.";
+
+  const getAlertTime = (alert) =>
+    alert?.timestamp || alert?.created_at || alert?.time || alert?.issued_at || null;
+
+  const getAlertCyclone = (alert) =>
+    alert?.cyclone_name || alert?.cyclone_id || alert?.storm_name || null;
+
+  const formatAlertTime = (value) => {
+    if (!value) return "Time unavailable";
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return String(value);
+    return `${date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      timeZone: "Asia/Kolkata"
+    })}, ${istTimeFormatter.format(date)} IST`;
+  };
+
+  const getAlertClasses = (severity) => {
+    if (severity === "CRITICAL" || severity === "HIGH" || severity === "RED") {
+      return {
+        container: "border-red-900/60 bg-red-950/20",
+        icon: "text-red-400",
+        badge: "bg-red-950 border-red-800 text-red-400"
+      };
+    }
+
+    if (severity === "MEDIUM" || severity === "MODERATE" || severity === "ORANGE") {
+      return {
+        container: "border-orange-900/60 bg-orange-950/20",
+        icon: "text-orange-400",
+        badge: "bg-orange-950 border-orange-800 text-orange-400"
+      };
+    }
+
+    return {
+      container: "border-sky-900/60 bg-sky-950/20",
+      icon: "text-sky-400",
+      badge: "bg-sky-950 border-sky-800 text-sky-400"
+    };
+  };
+
+  const displayedAlerts = [...systemAlerts]
+    .sort((a, b) => {
+      const aTime = new Date(getAlertTime(a) || 0).getTime();
+      const bTime = new Date(getAlertTime(b) || 0).getTime();
+      return bTime - aTime;
+    })
+    .slice(0, 5);
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-900 text-slate-100 font-sans">
@@ -751,6 +826,73 @@ export default function App() {
                 </button>
               </div>
 
+              {/* System Alerts Panel */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle
+                      size={14}
+                      className={displayedAlerts.length > 0 ? "text-orange-400" : "text-slate-500"}
+                    />
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      System Alerts
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-500">
+                    {displayedAlerts.length} recent
+                  </span>
+                </div>
+
+                {displayedAlerts.length > 0 ? (
+                  <div className="space-y-2">
+                    {displayedAlerts.map((alert, index) => {
+                      const severity = getAlertSeverity(alert);
+                      const classes = getAlertClasses(severity);
+                      const cycloneReference = getAlertCyclone(alert);
+
+                      return (
+                        <div
+                          key={alert?.id ?? `${getAlertTime(alert) ?? "alert"}-${index}`}
+                          className={`p-3 border rounded-lg ${classes.container} space-y-2`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start gap-2 min-w-0">
+                              <AlertTriangle size={14} className={`${classes.icon} mt-0.5 shrink-0`} />
+                              <div className="min-w-0">
+                                <span className="text-xs font-bold text-slate-200 block truncate">
+                                  {getAlertTitle(alert)}
+                                </span>
+                                {cycloneReference && (
+                                  <span className="text-[10px] text-slate-500 block mt-0.5 truncate">
+                                    Cyclone: {cycloneReference}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <span className={`px-1.5 py-0.5 text-[9px] font-black border rounded shrink-0 ${classes.badge}`}>
+                              {severity}
+                            </span>
+                          </div>
+
+                          <p className="text-[11px] text-slate-300 leading-relaxed">
+                            {getAlertMessage(alert)}
+                          </p>
+
+                          <div className="text-[9px] text-slate-500 font-mono">
+                            {formatAlertTime(getAlertTime(alert))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="p-3 border border-slate-800/70 bg-slate-900/40 rounded-lg text-[11px] text-slate-500">
+                    No alerts reported by the monitoring system.
+                  </div>
+                )}
+              </div>
+
               {/* Storm Selector */}
               <div>
                 <label className="text-xs text-slate-400 block mb-1">Select Monitored Cyclone</label>
@@ -857,7 +999,7 @@ export default function App() {
                 </>
               ) : (
                 <div className="py-12 text-center text-slate-500 text-sm">
-                  Loading storm database...
+                  No active cyclones detected in the North Indian Ocean region.
                 </div>
               )}
             </div>
@@ -1059,7 +1201,9 @@ export default function App() {
                       {replayData.forecasts.map((f, idx) => (
                         <div key={idx} className="flex justify-between items-center p-2.5 bg-slate-900/40 border border-slate-800/40 rounded text-xs">
                           <div>
-                            <span className="font-bold text-slate-200">+{f.forecast_time.includes("T") ? "6h" : ["+6h", "+12h", "+24h", "+48h"][idx]}</span>
+                            <span className="font-bold text-slate-200">
+                              {["+6h", "+12h", "+24h", "+48h"][idx] || "+?h"}
+                            </span>
                             <span className="text-[10px] text-slate-500 block">
                               {f.latitude}°N, {f.longitude}°E
                             </span>
