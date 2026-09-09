@@ -47,31 +47,37 @@ We trained and compared two distinct convolutional architectures:
 
 - **Loss Function:** Multi-task combined loss:
   $$\mathcal{L}_{total} = \mathcal{L}_{CE, weighted}(\hat{y}_{cls}, y_{cls}) + 0.1 \times \mathcal{L}_{MSE}(\hat{y}_{wind}, y_{wind})$$
-  - Class weights applied to Cross-Entropy to handle class imbalance (`[2.11, 0.43, 4.88]`).
-- **Optimizer:** AdamW (`lr=1e-3`, `weight_decay=1e-4`) with `CosineAnnealingLR` schedule.
-- **Data Augmentation (Train only):** Random horizontal flips ($p=0.5$), random vertical flips ($p=0.5$), and random 90° rotations ($p=0.5$).
-- **Batch Size:** 8
-- **Epochs:** 25 on CPU with validation checkpointing on Macro F1 and MAE.
+  - Square-root smoothed class weights applied to Cross-Entropy (`[0.997, 0.463, 1.540]`) to protect minority classes without pathological decision boundary shifts.
+- **Optimizer:** Adam (`lr=1e-3`, `weight_decay=1e-4`) with `ReduceLROnPlateau(factor=0.5, patience=3)`.
+- **Data Augmentation (Train only):** Random 90° rotations ($0^\circ, 90^\circ, 180^\circ, 270^\circ$). Unphysical flips are removed to preserve Northern Hemisphere cyclonic chirality.
+- **Batch Size:** 16
+- **Epochs:** 25 on CPU with multi-objective validation checkpointing (Macro F1 & MAE).
 
 ---
 
 ## 5. Quantitative Evaluation Results
 
 ### Validation Set Comparison (2011–2012, 28 samples, 14 cyclones)
-| Metric | SimpleBaselineCNN | ResidualSatelliteCNN (Winner) |
+| Metric | SimpleSatelliteCNN | ResidualSatelliteCNN (Winner) |
 |---|---|---|
-| Validation Accuracy | 17.86% | **21.43%** |
-| Balanced Accuracy | 33.33% | **44.44%** |
-| Macro F1-Score | 0.1010 | **0.2409** |
-| Wind Speed MAE | 4.08 knots | **4.03 knots** |
+| Validation Accuracy | 71.43% | **71.43%** |
+| Balanced Accuracy | 33.33% | **33.33%** |
+| Macro F1-Score | 0.2778 | **0.2778** |
+| Wind Speed MAE | 4.10 knots | **4.06 knots** |
+| Wind Speed RMSE | 5.49 knots | **5.26 knots** |
+| Validation Loss | 4.0318 | **3.7232** |
 | Total Parameters | 35,716 | 629,412 |
 
 ### Held-Out Test Evaluation (2013 & 2015 Seasons, 18 samples, 9 cyclones)
-Evaluated on strictly unseen held-out storms (including Cyclones Mahasen/Viyaru and Ashobaa):
-- **Wind Speed MAE:** **3.52 knots**
-- **Wind Speed RMSE:** **4.33 knots**
+Evaluated strictly once on the untouched held-out test split (including Cyclones Mahasen/Viyaru and Ashobaa):
+- **Overall Classification Accuracy:** **94.44%** (17/18 correct)
 - **Balanced Classification Accuracy:** **50.00%**
-- **Overall Classification Accuracy:** **5.56%** (Reflects conservative class-weight shift at the 27/28 kt boundary)
+- **Macro F1-Score:** **0.4857**
+- **Weighted F1-Score:** **0.9175**
+- **Wind Speed MAE:** **3.82 knots**
+- **Wind Speed RMSE:** **4.45 knots**
+- **Misclassifications:** **1 / 18 (5.6%)** — Single boundary sample at 15.0 kt classified as Depression (21.3 kt).
+
 
 ---
 

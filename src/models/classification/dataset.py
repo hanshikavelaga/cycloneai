@@ -76,13 +76,11 @@ class CycloneSatelliteDataset(Dataset):
         return len(self.data)
 
     def _apply_augmentation(self, image_np):
-        """Physically valid rotations and reflections for top-down cyclone imagery."""
-        # Random horizontal flip
-        if random.random() > 0.5:
-            image_np = np.fliplr(image_np)
-        # Random vertical flip
-        if random.random() > 0.5:
-            image_np = np.flipud(image_np)
+        """
+        Physically valid rotations for top-down satellite imagery.
+        Preserves counter-clockwise cyclonic rotation chirality in the Northern Hemisphere.
+        Flips (fliplr/flipud) are intentionally excluded as they invert storm chirality.
+        """
         # Random 90-degree rotations (0, 90, 180, 270 deg)
         rot_k = random.randint(0, 3)
         if rot_k > 0:

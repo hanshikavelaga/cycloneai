@@ -21,7 +21,10 @@ import torch
 import torch.nn as nn
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, mean_absolute_error, mean_squared_error
+from sklearn.metrics import (
+    accuracy_score, balanced_accuracy_score, precision_recall_fscore_support,
+    mean_absolute_error, mean_squared_error
+)
 
 from src.models.classification.dataset import get_dataloaders, CLASS_TO_IDX, IDX_TO_CLASS
 from src.models.classification.model import SimpleSatelliteCNN, ResidualSatelliteCNN
@@ -37,22 +40,29 @@ def set_seed(seed=42):
 
 
 def compute_class_weights(dataset):
-    """Computes balanced inverse-frequency class weights for cross-entropy loss."""
+    """
+    Computes square-root smoothed inverse-frequency class weights for cross-entropy loss.
+    Avoids pathological probability shifts caused by extreme raw inverse frequencies,
+    while providing mathematically principled penalty boosts for minority classes.
+    """
     counts = dataset.data['class_idx'].value_counts().sort_index()
     total = len(dataset)
     num_classes = len(CLASS_TO_IDX)
     
-    weights = []
+    raw_weights = []
     for i in range(num_classes):
         c = counts.get(i, 1)
-        # Standard balanced weighting: N / (k * N_c)
-        w = total / (num_classes * max(c, 1))
-        weights.append(w)
+        # Smoothed inverse frequency: sqrt(total / c)
+        w = np.sqrt(total / max(c, 1))
+        raw_weights.append(w)
         
-    return torch.tensor(weights, dtype=torch.float32)
+    raw_weights = np.array(raw_weights, dtype=np.float32)
+    # Normalize weights so mean is 1.0
+    norm_weights = raw_weights / raw_weights.mean()
+    return torch.tensor(norm_weights, dtype=torch.float32)
 
 
-def train_one_epoch(model, dataloader, optimizer, criterion_reg, criterion_cls, device, lambda_cls=2.0):
+def train_one_epoch(model, dataloader, optimizer, criterion_reg, criterion_cls, device, reg_weight=0.1):
     model.train()
     total_loss, total_loss_reg, total_loss_cls = 0.0, 0.0, 0.0
     all_preds_cls, all_targets_cls = [], []
@@ -68,7 +78,8 @@ def train_one_epoch(model, dataloader, optimizer, criterion_reg, criterion_cls, 
 
         loss_reg = criterion_reg(reg, winds)
         loss_cls = criterion_cls(logits, cats)
-        loss = loss_reg + (lambda_cls * loss_cls)
+        # Balanced gradient scaling: MSE (10-25) * 0.1 ~ 1.0-2.5 comparable with CE (~1.0)
+        loss = (reg_weight * loss_reg) + loss_cls
 
         loss.backward()
         optimizer.step()
@@ -90,7 +101,7 @@ def train_one_epoch(model, dataloader, optimizer, criterion_reg, criterion_cls, 
     return total_loss / n, total_loss_reg / n, total_loss_cls / n, acc, mae
 
 
-def evaluate(model, dataloader, criterion_reg, criterion_cls, device, lambda_cls=2.0):
+def evaluate(model, dataloader, criterion_reg, criterion_cls, device, reg_weight=0.1):
     model.eval()
     total_loss, total_loss_reg, total_loss_cls = 0.0, 0.0, 0.0
     all_preds_cls, all_targets_cls = [], []
@@ -105,7 +116,7 @@ def evaluate(model, dataloader, criterion_reg, criterion_cls, device, lambda_cls
             logits, reg = model(images)
             loss_reg = criterion_reg(reg, winds)
             loss_cls = criterion_cls(logits, cats)
-            loss = loss_reg + (lambda_cls * loss_cls)
+            loss = (reg_weight * loss_reg) + loss_cls
 
             batch_size = images.size(0)
             total_loss += loss.item() * batch_size
@@ -120,6 +131,7 @@ def evaluate(model, dataloader, criterion_reg, criterion_cls, device, lambda_cls
 
     n = len(dataloader.dataset)
     acc = accuracy_score(all_targets_cls, all_preds_cls)
+    bal_acc = balanced_accuracy_score(all_targets_cls, all_preds_cls)
     prec, rec, f1, _ = precision_recall_fscore_support(all_targets_cls, all_preds_cls, average='macro', zero_division=0)
     mae = mean_absolute_error(all_targets_reg, all_preds_reg)
     rmse = np.sqrt(mean_squared_error(all_targets_reg, all_preds_reg))
@@ -129,6 +141,7 @@ def evaluate(model, dataloader, criterion_reg, criterion_cls, device, lambda_cls
         'loss_reg': total_loss_reg / n,
         'loss_cls': total_loss_cls / n,
         'accuracy': acc,
+        'balanced_accuracy': bal_acc,
         'precision': prec,
         'recall': rec,
         'f1': f1,
@@ -140,6 +153,7 @@ def evaluate(model, dataloader, criterion_reg, criterion_cls, device, lambda_cls
         'targets_reg': all_targets_reg
     }
     return metrics
+
 
 
 def train_model(model_name, epochs=30, batch_size=16, lr=1e-3, seed=42, save_best=True):
@@ -181,7 +195,7 @@ def train_model(model_name, epochs=30, batch_size=16, lr=1e-3, seed=42, save_bes
     optimizer = Adam(model.parameters(), lr=lr, weight_decay=1e-4)
     scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3)
 
-    best_val_loss = float('inf')
+    best_score = -float('inf')
     best_metrics = None
     best_epoch = 0
     history = []
@@ -201,6 +215,7 @@ def train_model(model_name, epochs=30, batch_size=16, lr=1e-3, seed=42, save_bes
             'val_loss': val_metrics['loss'],
             'train_acc': tr_acc,
             'val_acc': val_metrics['accuracy'],
+            'val_bal_acc': val_metrics['balanced_accuracy'],
             'val_f1': val_metrics['f1'],
             'train_mae': tr_mae,
             'val_mae': val_metrics['mae']
@@ -208,10 +223,13 @@ def train_model(model_name, epochs=30, batch_size=16, lr=1e-3, seed=42, save_bes
 
         print(f"Epoch {epoch:02d}/{epochs:02d} | "
               f"Train Loss: {tr_loss:.4f} (Acc: {tr_acc*100:.1f}%, MAE: {tr_mae:.2f}) | "
-              f"Val Loss: {val_metrics['loss']:.4f} (Acc: {val_metrics['accuracy']*100:.1f}%, F1: {val_metrics['f1']:.3f}, MAE: {val_metrics['mae']:.2f} kts)")
+              f"Val Loss: {val_metrics['loss']:.4f} (Acc: {val_metrics['accuracy']*100:.1f}%, Bal: {val_metrics['balanced_accuracy']*100:.1f}%, F1: {val_metrics['f1']:.3f}, MAE: {val_metrics['mae']:.2f} kts)")
 
-        if val_metrics['loss'] < best_val_loss:
-            best_val_loss = val_metrics['loss']
+        # Scientifically principled multi-objective validation selection
+        # Rewards high Macro F1 across minority classes and low physical MAE error
+        val_score = val_metrics['f1'] - 0.05 * val_metrics['mae']
+        if val_score > best_score:
+            best_score = val_score
             best_epoch = epoch
             best_metrics = val_metrics
 
@@ -221,7 +239,8 @@ def train_model(model_name, epochs=30, batch_size=16, lr=1e-3, seed=42, save_bes
                     'epoch': epoch,
                     'model_state_dict': model.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
-                    'val_loss': best_val_loss,
+                    'val_loss': val_metrics['loss'],
+                    'val_score': best_score,
                     'val_metrics': {k: v for k, v in val_metrics.items() if not isinstance(v, list)},
                     'architecture': model.__class__.__name__,
                     'in_channels': 1,
@@ -230,7 +249,7 @@ def train_model(model_name, epochs=30, batch_size=16, lr=1e-3, seed=42, save_bes
                 }, ckpt_path)
 
     elapsed_time = time.time() - start_time
-    print(f"\nTraining finished in {elapsed_time:.1f}s. Best Epoch: {best_epoch} (Val Loss: {best_val_loss:.4f})")
+    print(f"\nTraining finished in {elapsed_time:.1f}s. Best Epoch: {best_epoch} (Val F1: {best_metrics['f1']:.4f}, MAE: {best_metrics['mae']:.2f} kts)")
 
     # Save training curve history
     history_df = pd.DataFrame(history)
@@ -244,12 +263,14 @@ def train_model(model_name, epochs=30, batch_size=16, lr=1e-3, seed=42, save_bes
         'best_epoch': best_epoch,
         'val_loss': round(best_metrics['loss'], 4),
         'val_accuracy': round(best_metrics['accuracy'], 4),
+        'val_balanced_accuracy': round(best_metrics['balanced_accuracy'], 4),
         'val_precision': round(best_metrics['precision'], 4),
         'val_recall': round(best_metrics['recall'], 4),
         'val_f1': round(best_metrics['f1'], 4),
         'val_mae_kts': round(best_metrics['mae'], 2),
         'val_rmse_kts': round(best_metrics['rmse'], 2)
     }
+
 
 
 def compare_models():

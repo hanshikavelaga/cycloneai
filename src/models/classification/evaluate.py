@@ -99,10 +99,15 @@ def run_evaluation():
     rmse = np.sqrt(mean_squared_error(all_targets_reg, all_preds_reg))
     r2 = r2_score(all_targets_reg, all_preds_reg)
 
+    test_cyclones = sorted(list(set([m['cyclone_id'] for m in all_metas])))
+    test_cyclone_names = sorted(list(set([m['cyclone_name'] for m in all_metas])))
+
     # 3. Print Results
     print("\n" + "=" * 50)
     print("ACTUAL TEST SET EVALUATION METRICS (GENUINE RUN)")
     print("=" * 50)
+    print(f"Test Samples:           {len(test_dataset)}")
+    print(f"Test Cyclones:          {len(test_cyclones)} ({', '.join(test_cyclone_names)})")
     print(f"Overall Accuracy:       {acc * 100:.2f}%")
     print(f"Balanced Accuracy:      {bal_acc * 100:.2f}%")
     print(f"Macro Precision:        {prec_macro:.4f}")
