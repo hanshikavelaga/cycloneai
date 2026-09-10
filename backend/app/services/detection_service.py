@@ -1,73 +1,106 @@
+"""
+CycloneAI Backend Detection Service
+===================================
+Production integration for satellite-based cyclone pattern classification and intensity estimation.
+Powered by the 5-Fold Soft-Voting Ensemble (Approach A - Aggressive CE weights).
+Directly computes predictions on real satellite data; zero hardcoded mock fallbacks.
+"""
+
 import os
-import torch
-import numpy as np
-from PIL import Image
+import sys
+import logging
+from typing import Dict, Any, Optional
 
-# Import trained production inference pipeline
-try:
-    from src.models.classification.inference import predict_satellite_image
-    HAS_TRAINED_CNN = True
-except ImportError:
-    HAS_TRAINED_CNN = False
+# Ensure repository root is on sys.path
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
 
-MODEL_PATH = "./models/classification/satellite_cnn_best.pth"
-LEGACY_MODEL_PATH = "./models/classification/multi_task_cnn.pth"
-CLASSES = ["No Cyclone", "Shear", "Curved Band", "CDO", "Eye"]
+from models.satellite.inference import (
+    EnsembleSatellitePredictor,
+    DEFAULT_ENSEMBLE_CHECKPOINTS,
+    CLASS_NAMES,
+)
+
+logger = logging.getLogger("cycloneai.detection_service")
+
 
 class DetectionService:
-    def __init__(self):
-        self.model = None
-        if os.path.exists(MODEL_PATH):
-            print(f"DetectionService: Production satellite CNN detected at {MODEL_PATH}")
-        elif os.path.exists(LEGACY_MODEL_PATH):
-            print(f"DetectionService: Legacy model detected at {LEGACY_MODEL_PATH}")
-        else:
-            print("DetectionService: Warning: Checkpoint not found. Running in fallback mode.")
+    """
+    Backend service wrapping the production 5-fold satellite CNN ensemble.
+    Accepts .npy arrays or standard image files (.png, .jpg), runs soft-voting,
+    and returns IMD classification, wind speed, Dvorak T-number, and estimated pressure.
+    """
 
-    def run_inference(self, image_path: str):
+    def __init__(self, checkpoint_paths: Optional[list] = None):
+        self.checkpoint_paths = checkpoint_paths or DEFAULT_ENSEMBLE_CHECKPOINTS
+        self.predictor = None
+        self._initialize_predictor()
+
+    def _initialize_predictor(self):
+        """Validates checkpoint files and loads the 5-fold ensemble into memory."""
+        missing = [p for p in self.checkpoint_paths if not os.path.exists(p)]
+        if missing:
+            err_msg = (
+                f"DetectionService initialization error: The following ensemble checkpoint(s) "
+                f"were not found: {missing}. Please ensure model weights are tracked and available."
+            )
+            logger.error(err_msg)
+            raise FileNotFoundError(err_msg)
+
+        try:
+            self.predictor = EnsembleSatellitePredictor(checkpoint_paths=self.checkpoint_paths)
+            print(f"DetectionService: Production 5-fold ensemble loaded successfully ({len(self.predictor.models)} models).")
+        except Exception as e:
+            logger.error(f"DetectionService: Failed to instantiate EnsembleSatellitePredictor: {e}")
+            raise RuntimeError(f"Failed to load satellite ensemble predictor: {e}") from e
+
+    def run_inference(self, image_path: str) -> Dict[str, Any]:
         """
-        Loads satellite image, preprocesses it, runs PyTorch CNN,
+        Loads satellite image, runs 5-fold soft-voting ensemble CNN,
         and returns IMD classification + estimated intensity parameters.
-        Preserves complete backward compatibility with frontend contract.
+        Preserves backward compatibility with frontend contract while eliminating hardcoded stubs.
         """
         if not os.path.exists(image_path):
             raise FileNotFoundError(f"Satellite image not found: {image_path}")
 
-        if HAS_TRAINED_CNN and os.path.exists(MODEL_PATH):
-            try:
-                res = predict_satellite_image(image_path, checkpoint_path=MODEL_PATH)
-                pattern_type = res["prediction"]
-                confidence = float(res["confidence"])
-                wind_speed = float(res["predicted_wind_speed_knots"])
-                
-                # Empirical Dvorak T-number derivation based on wind speed
-                if "Low Pressure" in pattern_type or wind_speed < 17.0:
-                    t_number = 1.0
-                elif "Depression" in pattern_type and "Deep" not in pattern_type:
-                    t_number = max(1.5, min(2.0, round((wind_speed - 17.0) / 10.0 * 0.5 + 1.5, 1)))
-                else:
-                    t_number = max(2.0, min(3.0, round((wind_speed - 28.0) / 6.0 * 0.5 + 2.5, 1)))
+        if self.predictor is None:
+            self._initialize_predictor()
 
-                return {
-                    "pattern_type": pattern_type,
-                    "confidence": round(confidence, 3),
-                    "wind_speed_knots": round(wind_speed, 1),
-                    "dvorak_t_number": round(t_number, 1),
-                    "estimated_pressure_hpa": round(1010.0 - (wind_speed * 0.65), 1),
-                    "probabilities": res.get("class_probabilities", {})
-                }
-            except Exception as e:
-                print(f"DetectionService: Trained CNN inference error: {e}, falling back.")
+        try:
+            res = self.predictor.predict_file(image_path)
+            pattern_type = res["predicted_class"]
+            probs = res.get("probabilities", {})
+            confidence = float(probs.get(pattern_type, 0.0))
+            wind_speed = float(res["predicted_wind_speed_knots"])
 
-        # Fallback response in case of processing failure
-        return {
-            "pattern_type": "Depression (17-27 kts)",
-            "confidence": 0.75,
-            "wind_speed_knots": 22.5,
-            "dvorak_t_number": 1.5,
-            "estimated_pressure_hpa": 995.4
-        }
+            # Empirical Dvorak T-number derivation based on continuous wind speed (IMD standards)
+            if "Low Pressure" in pattern_type or wind_speed < 17.0:
+                t_number = 1.0
+            elif "Depression" in pattern_type and "Deep" not in pattern_type:
+                t_number = max(1.5, min(2.0, round((wind_speed - 17.0) / 10.0 * 0.5 + 1.5, 1)))
+            else:
+                t_number = max(2.0, min(3.0, round((wind_speed - 28.0) / 6.0 * 0.5 + 2.5, 1)))
+
+            # Empirical central pressure estimation (Atkinson & Holliday formula approximation)
+            estimated_pressure_hpa = round(1010.0 - (wind_speed * 0.65), 1)
+
+            return {
+                "pattern_type": pattern_type,
+                "confidence": round(confidence, 3),
+                "wind_speed_knots": round(wind_speed, 1),
+                "dvorak_t_number": round(t_number, 1),
+                "estimated_pressure_hpa": estimated_pressure_hpa,
+                "probabilities": probs,
+                "ensemble_size": res.get("ensemble_size", 5),
+                "inference_mode": res.get("inference_mode", "ensemble_soft_vote"),
+                "latency_ms": res.get("latency_ms", 0.0),
+            }
+        except Exception as e:
+            logger.error(f"DetectionService inference error on {image_path}: {e}")
+            # Do NOT return hardcoded mock data: re-raise so callers receive true error status
+            raise RuntimeError(f"DetectionService inference failed on {image_path}: {e}") from e
+
 
 # Instantiate singleton
 detection_service = DetectionService()
-

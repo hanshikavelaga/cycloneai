@@ -49,6 +49,25 @@ def map_intensity_to_imd_category(wind_kts: float) -> str:
         return 'Deep Depression (28-33 kts)'
 
 
+def load_satellite_image(file_path: str) -> np.ndarray:
+    """
+    Loads satellite image from .npy array or standard image format (.png, .jpg, .jpeg).
+    Returns 128x128 float32 array normalized to [0.0, 1.0].
+    """
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"Satellite image file not found: {file_path}")
+    
+    if file_path.endswith(".npy"):
+        arr = np.load(file_path).astype(np.float32)
+    else:
+        from PIL import Image
+        img = Image.open(file_path).convert("L")
+        if img.size != (128, 128):
+            img = img.resize((128, 128), Image.Resampling.BILINEAR)
+        arr = np.array(img, dtype=np.float32) / 255.0
+    return arr
+
+
 class EnsembleSatellitePredictor:
     """
     Production 5-Fold Ensemble Predictor using Soft-Voting.
@@ -126,9 +145,7 @@ class EnsembleSatellitePredictor:
         }
 
     def predict_file(self, file_path: str) -> Dict[str, Any]:
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Array file not found: {file_path}")
-        arr = np.load(file_path)
+        arr = load_satellite_image(file_path)
         res = self.predict_array(arr)
         res["file_path"] = file_path
         res["filename"] = os.path.basename(file_path)
@@ -136,9 +153,10 @@ class EnsembleSatellitePredictor:
 
     def predict_directory(self, dir_path: str) -> List[Dict[str, Any]]:
         results = []
+        valid_exts = (".npy", ".png", ".jpg", ".jpeg")
         for root, _, files in os.walk(dir_path):
             for f in sorted(files):
-                if f.endswith(".npy"):
+                if f.lower().endswith(valid_exts):
                     p = os.path.join(root, f)
                     try:
                         res = self.predict_file(p)
@@ -231,9 +249,7 @@ class LegacySingleSatellitePredictor:
                 }
 
     def predict_file(self, file_path: str) -> Dict[str, Any]:
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Array file not found: {file_path}")
-        arr = np.load(file_path)
+        arr = load_satellite_image(file_path)
         res = self.predict_array(arr)
         res["file_path"] = file_path
         res["filename"] = os.path.basename(file_path)
@@ -241,9 +257,10 @@ class LegacySingleSatellitePredictor:
 
     def predict_directory(self, dir_path: str) -> List[Dict[str, Any]]:
         results = []
+        valid_exts = (".npy", ".png", ".jpg", ".jpeg")
         for root, _, files in os.walk(dir_path):
             for f in sorted(files):
-                if f.endswith(".npy"):
+                if f.lower().endswith(valid_exts):
                     p = os.path.join(root, f)
                     try:
                         res = self.predict_file(p)
@@ -278,8 +295,8 @@ def predict_satellite_image(
 
 def main():
     parser = argparse.ArgumentParser(description="CycloneAI Satellite CNN Production Inference (5-Fold Ensemble Default)")
-    parser.add_argument("--image", type=str, help="Path to a single .npy satellite array")
-    parser.add_argument("--dir", type=str, help="Path to directory containing .npy satellite arrays")
+    parser.add_argument("--image", type=str, help="Path to a single .npy satellite array or image (.png, .jpg)")
+    parser.add_argument("--dir", type=str, help="Path to directory containing satellite files")
     parser.add_argument("--single", action="store_true", help="Run in legacy single-model mode instead of 5-fold ensemble")
     parser.add_argument("--checkpoint", type=str, default=None, help="Explicit checkpoint path (triggers legacy single-model mode)")
     parser.add_argument("--output", type=str, default=None, help="Optional output JSON or CSV file")
