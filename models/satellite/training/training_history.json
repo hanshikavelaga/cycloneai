@@ -1,0 +1,202 @@
+[
+  {
+    "epoch": 1,
+    "train_loss": 10.235,
+    "train_mae": 10.7276,
+    "val_loss": 7.6321,
+    "val_mae": 8.1321,
+    "is_best": true,
+    "patience": 0,
+    "epoch_duration_sec": 1.01
+  },
+  {
+    "epoch": 2,
+    "train_loss": 6.212,
+    "train_mae": 6.7002,
+    "val_loss": 7.7974,
+    "val_mae": 8.2974,
+    "is_best": false,
+    "patience": 1,
+    "epoch_duration_sec": 0.94
+  },
+  {
+    "epoch": 3,
+    "train_loss": 4.8893,
+    "train_mae": 5.3721,
+    "val_loss": 4.0034,
+    "val_mae": 4.5034,
+    "is_best": true,
+    "patience": 0,
+    "epoch_duration_sec": 0.84
+  },
+  {
+    "epoch": 4,
+    "train_loss": 4.4689,
+    "train_mae": 4.9428,
+    "val_loss": 3.9355,
+    "val_mae": 4.4355,
+    "is_best": true,
+    "patience": 0,
+    "epoch_duration_sec": 0.75
+  },
+  {
+    "epoch": 5,
+    "train_loss": 4.2731,
+    "train_mae": 4.7518,
+    "val_loss": 4.4918,
+    "val_mae": 4.9666,
+    "is_best": false,
+    "patience": 1,
+    "epoch_duration_sec": 0.83
+  },
+  {
+    "epoch": 6,
+    "train_loss": 4.6527,
+    "train_mae": 5.1361,
+    "val_loss": 3.8045,
+    "val_mae": 4.3026,
+    "is_best": true,
+    "patience": 0,
+    "epoch_duration_sec": 0.93
+  },
+  {
+    "epoch": 7,
+    "train_loss": 3.8327,
+    "train_mae": 4.3,
+    "val_loss": 4.3827,
+    "val_mae": 4.8747,
+    "is_best": false,
+    "patience": 1,
+    "epoch_duration_sec": 0.86
+  },
+  {
+    "epoch": 8,
+    "train_loss": 4.0765,
+    "train_mae": 4.5471,
+    "val_loss": 2.8952,
+    "val_mae": 3.3881,
+    "is_best": true,
+    "patience": 0,
+    "epoch_duration_sec": 1.51
+  },
+  {
+    "epoch": 9,
+    "train_loss": 3.6222,
+    "train_mae": 4.0964,
+    "val_loss": 3.1951,
+    "val_mae": 3.6937,
+    "is_best": false,
+    "patience": 1,
+    "epoch_duration_sec": 2.47
+  },
+  {
+    "epoch": 10,
+    "train_loss": 3.2001,
+    "train_mae": 3.6815,
+    "val_loss": 3.238,
+    "val_mae": 3.6958,
+    "is_best": false,
+    "patience": 2,
+    "epoch_duration_sec": 2.58
+  },
+  {
+    "epoch": 11,
+    "train_loss": 3.6473,
+    "train_mae": 4.1228,
+    "val_loss": 3.7738,
+    "val_mae": 4.2509,
+    "is_best": false,
+    "patience": 3,
+    "epoch_duration_sec": 2.53
+  },
+  {
+    "epoch": 12,
+    "train_loss": 3.5276,
+    "train_mae": 4.0,
+    "val_loss": 2.866,
+    "val_mae": 3.3353,
+    "is_best": true,
+    "patience": 0,
+    "epoch_duration_sec": 2.42
+  },
+  {
+    "epoch": 13,
+    "train_loss": 3.7482,
+    "train_mae": 4.2275,
+    "val_loss": 3.6238,
+    "val_mae": 4.1001,
+    "is_best": false,
+    "patience": 1,
+    "epoch_duration_sec": 2.15
+  },
+  {
+    "epoch": 14,
+    "train_loss": 3.3638,
+    "train_mae": 3.8352,
+    "val_loss": 3.1428,
+    "val_mae": 3.6274,
+    "is_best": false,
+    "patience": 2,
+    "epoch_duration_sec": 2.24
+  },
+  {
+    "epoch": 15,
+    "train_loss": 3.698,
+    "train_mae": 4.173,
+    "val_loss": 4.0393,
+    "val_mae": 4.5294,
+    "is_best": false,
+    "patience": 3,
+    "epoch_duration_sec": 1.96
+  },
+  {
+    "epoch": 16,
+    "train_loss": 3.3739,
+    "train_mae": 3.8506,
+    "val_loss": 2.8512,
+    "val_mae": 3.347,
+    "is_best": false,
+    "patience": 4,
+    "epoch_duration_sec": 1.7
+  },
+  {
+    "epoch": 17,
+    "train_loss": 3.6812,
+    "train_mae": 4.1585,
+    "val_loss": 2.9842,
+    "val_mae": 3.4675,
+    "is_best": false,
+    "patience": 5,
+    "epoch_duration_sec": 1.53
+  },
+  {
+    "epoch": 18,
+    "train_loss": 3.7662,
+    "train_mae": 4.2533,
+    "val_loss": 3.0255,
+    "val_mae": 3.496,
+    "is_best": false,
+    "patience": 6,
+    "epoch_duration_sec": 1.59
+  },
+  {
+    "epoch": 19,
+    "train_loss": 2.8674,
+    "train_mae": 3.3399,
+    "val_loss": 3.1566,
+    "val_mae": 3.6199,
+    "is_best": false,
+    "patience": 7,
+    "epoch_duration_sec": 1.52
+  },
+  {
+    "epoch": 20,
+    "train_loss": 3.3211,
+    "train_mae": 3.7905,
+    "val_loss": 3.578,
+    "val_mae": 4.0708,
+    "is_best": false,
+    "patience": 8,
+    "epoch_duration_sec": 1.64
+  }
+]

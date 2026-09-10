@@ -1,0 +1,87 @@
+{
+  "recommended_strategy": "Chronological Cyclone-Grouped Split (Strategy 1)",
+  "period_coverage": "2000-2015",
+  "total_verified_observations": 234,
+  "total_unique_cyclones": 113,
+  "splits": {
+    "train": {
+      "years": [
+        2000,
+        2001,
+        2002,
+        2003,
+        2004,
+        2005,
+        2006,
+        2007,
+        2008
+      ],
+      "sample_count": 158,
+      "percentage_of_total": 67.52,
+      "unique_cyclones": 75,
+      "class_distribution": {
+        "Low Pressure Area (< 17 kts)": 25,
+        "Depression (17-27 kts)": 121,
+        "Deep Depression (28-33 kts)": 12
+      },
+      "class_percentages": {
+        "Low Pressure Area (< 17 kts)": 15.82,
+        "Depression (17-27 kts)": 76.58,
+        "Deep Depression (28-33 kts)": 7.59
+      }
+    },
+    "validation": {
+      "years": [
+        2009,
+        2010
+      ],
+      "sample_count": 30,
+      "percentage_of_total": 12.82,
+      "unique_cyclones": 15,
+      "class_distribution": {
+        "Low Pressure Area (< 17 kts)": 6,
+        "Depression (17-27 kts)": 23,
+        "Deep Depression (28-33 kts)": 1
+      },
+      "class_percentages": {
+        "Low Pressure Area (< 17 kts)": 20.0,
+        "Depression (17-27 kts)": 76.67,
+        "Deep Depression (28-33 kts)": 3.33
+      }
+    },
+    "test": {
+      "years": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015
+      ],
+      "sample_count": 46,
+      "percentage_of_total": 19.66,
+      "unique_cyclones": 23,
+      "class_distribution": {
+        "Low Pressure Area (< 17 kts)": 6,
+        "Depression (17-27 kts)": 37,
+        "Deep Depression (28-33 kts)": 3
+      },
+      "class_percentages": {
+        "Low Pressure Area (< 17 kts)": 13.04,
+        "Depression (17-27 kts)": 80.43,
+        "Deep Depression (28-33 kts)": 6.52
+      }
+    }
+  },
+  "cyclone_overlap_verification": {
+    "train_val_overlap_count": 0,
+    "train_test_overlap_count": 0,
+    "val_test_overlap_count": 0,
+    "zero_leakage_guaranteed": true
+  },
+  "scientific_rationale": "Strategy 1 preserves historical temporal progression while maintaining representation of all 3 intensity classes in Train, Val, and Test splits. Zero cyclone overlap prevents spatial/temporal data leakage.",
+  "dataset_limitations": [
+    "Year 2014 contains 0 HURSAT observations in the North Indian Ocean.",
+    "Deep Depression class is rare (16 samples total, 6.84%), requiring stratification or class weighting.",
+    "Zero observations exist prior to track start; model evaluates contemporaneous intensity development."
+  ]
+}
