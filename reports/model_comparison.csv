@@ -1,0 +1,3 @@
+model_name,parameters,training_time_s,best_epoch,val_loss,val_accuracy,val_balanced_accuracy,val_precision,val_recall,val_f1,val_mae_kts,val_rmse_kts
+baseline,35716,7.03,16,1.1199,0.4333,0.7126,0.4504,0.7126,0.3926,3.53,4.14
+residual,629412,38.25,19,1.0396,0.4667,0.7271,0.494,0.7271,0.4128,3.75,4.67

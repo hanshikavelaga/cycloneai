@@ -1,0 +1,57 @@
+{
+  "n_samples": 46,
+  "regression": {
+    "mae": 4.3518,
+    "rmse": 5.3585,
+    "r2": -0.2894,
+    "pearson_r": 0.1086,
+    "pearson_p_value": 0.472670589771132,
+    "spearman_rho": 0.1919,
+    "spearman_p_value": 0.2013453055930183,
+    "accuracy_within_3kt": 0.3696,
+    "accuracy_within_5kt": 0.6522,
+    "accuracy_within_10kt": 0.9565,
+    "mean_bias_kt": -0.8096,
+    "std_ratio": 0.6299,
+    "std_true": 4.7711,
+    "std_pred": 3.0051
+  },
+  "baseline_comparison": {
+    "train_mean_knots": 22.85,
+    "baseline_mae": 3.5633,
+    "baseline_rmse": 4.7199,
+    "baseline_r2": -0.0004,
+    "mae_reduction_kt": -0.7885,
+    "mae_reduction_pct": -22.13
+  },
+  "derived_classification": {
+    "accuracy": 0.7609,
+    "balanced_accuracy": 0.3153,
+    "macro_precision": 0.2652,
+    "macro_recall": 0.3153,
+    "macro_f1": 0.2881,
+    "per_class": {
+      "LPA (<17 kts)": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "support": 6
+      },
+      "Depression (17-27 kts)": {
+        "precision": 0.7954545454545454,
+        "recall": 0.9459459459459459,
+        "f1_score": 0.8641975308641975,
+        "support": 37
+      },
+      "Deep Depression (28-33 kts)": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "support": 3
+      }
+    }
+  },
+  "split": "test (2011-2015)",
+  "final_test_evaluation_count": 1,
+  "cyclones_count": 23
+}

@@ -1,0 +1,900 @@
+{
+  "dataset": {
+    "split": "validation",
+    "seasons": [
+      2009,
+      2010
+    ],
+    "samples": 30,
+    "cyclones": 15,
+    "true_class_distribution": {
+      "Depression (17-27 kts)": 23,
+      "Low Pressure Area (< 17 kts)": 6,
+      "Deep Depression (28-33 kts)": 1
+    }
+  },
+  "thresholds": {
+    "low": "< 17 kts",
+    "depression": "17 <= v_hat <= 27 kts",
+    "deep_depression": ">= 28 kts"
+  },
+  "approach_a_classification_head": {
+    "accuracy": 0.4667,
+    "balanced_accuracy": 0.7271,
+    "macro_precision": 0.494,
+    "macro_recall": 0.7271,
+    "macro_f1": 0.4128,
+    "weighted_f1": 0.5031,
+    "per_class": {
+      "Low Pressure Area (< 17 kts)": {
+        "precision": 0.3571,
+        "recall": 0.8333,
+        "f1": 0.5,
+        "support": 6
+      },
+      "Depression (17-27 kts)": {
+        "precision": 1.0,
+        "recall": 0.3478,
+        "f1": 0.5161,
+        "support": 23
+      },
+      "Deep Depression (28-33 kts)": {
+        "precision": 0.125,
+        "recall": 1.0,
+        "f1": 0.2222,
+        "support": 1
+      }
+    },
+    "confusion_matrix": [
+      [
+        5,
+        0,
+        1
+      ],
+      [
+        9,
+        8,
+        6
+      ],
+      [
+        0,
+        0,
+        1
+      ]
+    ],
+    "pred_distribution": {
+      "0": 14,
+      "2": 8,
+      "1": 8
+    },
+    "correct": 14,
+    "incorrect": 16
+  },
+  "approach_b_regression_derived": {
+    "accuracy": 0.6667,
+    "balanced_accuracy": 0.2899,
+    "macro_precision": 0.2469,
+    "macro_recall": 0.2899,
+    "macro_f1": 0.2667,
+    "weighted_f1": 0.6133,
+    "per_class": {
+      "Low Pressure Area (< 17 kts)": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6
+      },
+      "Depression (17-27 kts)": {
+        "precision": 0.7407,
+        "recall": 0.8696,
+        "f1": 0.8,
+        "support": 23
+      },
+      "Deep Depression (28-33 kts)": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        6,
+        0
+      ],
+      [
+        0,
+        20,
+        3
+      ],
+      [
+        0,
+        1,
+        0
+      ]
+    ],
+    "pred_distribution": {
+      "1": 27,
+      "2": 3
+    },
+    "correct": 20,
+    "incorrect": 10
+  },
+  "regression_quality": {
+    "mae_kts": 3.75,
+    "rmse_kts": 4.67,
+    "r2_score": -0.167,
+    "mean_true_wind": 22.0,
+    "mean_pred_wind": 23.9,
+    "std_true_wind": 4.32,
+    "std_pred_wind": 2.53,
+    "min_pred_wind": 20.1,
+    "max_pred_wind": 31.46
+  },
+  "boundary_analysis": {
+    "low_depression_boundary_15_to_19_kt": {
+      "sample_count": 10,
+      "true_wind_distribution": {
+        "15.0": 6,
+        "18.0": 4
+      },
+      "true_class_distribution": {
+        "Low Pressure Area (< 17 kts)": 6,
+        "Depression (17-27 kts)": 4
+      },
+      "head_correct_count": 7,
+      "head_accuracy": 0.7,
+      "reg_correct_count": 4,
+      "reg_accuracy": 0.4,
+      "mean_abs_error": 6.47
+    },
+    "depression_deep_boundary_26_to_30_kt": {
+      "sample_count": 1,
+      "true_wind_distribution": {
+        "28.0": 1
+      },
+      "true_class_distribution": {
+        "Deep Depression (28-33 kts)": 1
+      },
+      "head_correct_count": 1,
+      "head_accuracy": 1.0,
+      "reg_correct_count": 0,
+      "reg_accuracy": 0.0,
+      "mean_abs_error": 1.29
+    }
+  },
+  "error_analysis_wind_proximity": {
+    "total_classification_errors": 16,
+    "within_1kt": 4,
+    "pct_within_1kt": 25.0,
+    "within_2kt": 6,
+    "pct_within_2kt": 37.5,
+    "within_3kt": 9,
+    "pct_within_3kt": 56.2,
+    "within_5kt": 13,
+    "pct_within_5kt": 81.2
+  },
+  "sample_details": [
+    {
+      "filename": "hursat_genesis_2009104N13088_BIJLI_0.npy",
+      "cyclone_id": "2009104N13088",
+      "cyclone_name": "BIJLI",
+      "year": 2009,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 25.13,
+      "wind_error": 0.13,
+      "abs_wind_error": 0.13,
+      "pred_head_idx": 2,
+      "pred_head_name": "Deep Depression (28-33 kts)",
+      "head_correct": false,
+      "head_confidence": 0.5895,
+      "head_probs": [
+        0.1652,
+        0.2453,
+        0.5895
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2009104N13088_BIJLI_3.npy",
+      "cyclone_id": "2009104N13088",
+      "cyclone_name": "BIJLI",
+      "year": 2009,
+      "true_wind": 28.0,
+      "true_class_idx": 2,
+      "true_class_name": "Deep Depression (28-33 kts)",
+      "pred_wind": 26.71,
+      "wind_error": -1.29,
+      "abs_wind_error": 1.29,
+      "pred_head_idx": 2,
+      "pred_head_name": "Deep Depression (28-33 kts)",
+      "head_correct": true,
+      "head_confidence": 0.6935,
+      "head_probs": [
+        0.1059,
+        0.2005,
+        0.6935
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": false
+    },
+    {
+      "filename": "hursat_genesis_2009143N17089_AILA_0.npy",
+      "cyclone_id": "2009143N17089",
+      "cyclone_name": "AILA",
+      "year": 2009,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 21.86,
+      "wind_error": -3.14,
+      "abs_wind_error": 3.14,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": false,
+      "head_confidence": 0.4987,
+      "head_probs": [
+        0.4987,
+        0.4291,
+        0.0722
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2009143N17089_AILA_3.npy",
+      "cyclone_id": "2009143N17089",
+      "cyclone_name": "AILA",
+      "year": 2009,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 20.77,
+      "wind_error": -4.23,
+      "abs_wind_error": 4.23,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": false,
+      "head_confidence": 0.5613,
+      "head_probs": [
+        0.5613,
+        0.3901,
+        0.0485
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2009174N18072_MISSING_0.npy",
+      "cyclone_id": "2009174N18072",
+      "cyclone_name": "NIO_2009174N18",
+      "year": 2009,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 24.76,
+      "wind_error": -0.24,
+      "abs_wind_error": 0.24,
+      "pred_head_idx": 2,
+      "pred_head_name": "Deep Depression (28-33 kts)",
+      "head_correct": false,
+      "head_confidence": 0.4455,
+      "head_probs": [
+        0.1922,
+        0.3623,
+        0.4455
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2009174N18072_MISSING_3.npy",
+      "cyclone_id": "2009174N18072",
+      "cyclone_name": "NIO_2009174N18",
+      "year": 2009,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 24.6,
+      "wind_error": -0.4,
+      "abs_wind_error": 0.4,
+      "pred_head_idx": 1,
+      "pred_head_name": "Depression (17-27 kts)",
+      "head_correct": true,
+      "head_confidence": 0.3903,
+      "head_probs": [
+        0.2273,
+        0.3903,
+        0.3824
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2009177N23069_MISSING_0.npy",
+      "cyclone_id": "2009176N23069",
+      "cyclone_name": "NIO_2009176N23",
+      "year": 2009,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 22.41,
+      "wind_error": -2.59,
+      "abs_wind_error": 2.59,
+      "pred_head_idx": 1,
+      "pred_head_name": "Depression (17-27 kts)",
+      "head_correct": true,
+      "head_confidence": 0.4623,
+      "head_probs": [
+        0.3569,
+        0.4623,
+        0.1808
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2009177N23069_MISSING_3.npy",
+      "cyclone_id": "2009176N23069",
+      "cyclone_name": "NIO_2009176N23",
+      "year": 2009,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 22.1,
+      "wind_error": -2.9,
+      "abs_wind_error": 2.9,
+      "pred_head_idx": 1,
+      "pred_head_name": "Depression (17-27 kts)",
+      "head_correct": true,
+      "head_confidence": 0.4775,
+      "head_probs": [
+        0.3564,
+        0.4775,
+        0.1662
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2009201N21089_MISSING_0.npy",
+      "cyclone_id": "2009201N21089",
+      "cyclone_name": "NIO_2009201N21",
+      "year": 2009,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 23.19,
+      "wind_error": -1.81,
+      "abs_wind_error": 1.81,
+      "pred_head_idx": 1,
+      "pred_head_name": "Depression (17-27 kts)",
+      "head_correct": true,
+      "head_confidence": 0.4292,
+      "head_probs": [
+        0.3713,
+        0.4292,
+        0.1995
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2009201N21089_MISSING_3.npy",
+      "cyclone_id": "2009201N21089",
+      "cyclone_name": "NIO_2009201N21",
+      "year": 2009,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 22.04,
+      "wind_error": -2.96,
+      "abs_wind_error": 2.96,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": false,
+      "head_confidence": 0.4324,
+      "head_probs": [
+        0.4324,
+        0.426,
+        0.1416
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2009247N19089_MISSING_0.npy",
+      "cyclone_id": "2009247N19089",
+      "cyclone_name": "NIO_2009247N19",
+      "year": 2009,
+      "true_wind": 15.0,
+      "true_class_idx": 0,
+      "true_class_name": "Low Pressure Area (< 17 kts)",
+      "pred_wind": 20.44,
+      "wind_error": 5.44,
+      "abs_wind_error": 5.44,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": true,
+      "head_confidence": 0.506,
+      "head_probs": [
+        0.506,
+        0.4187,
+        0.0753
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": false
+    },
+    {
+      "filename": "hursat_genesis_2009247N19089_MISSING_3.npy",
+      "cyclone_id": "2009247N19089",
+      "cyclone_name": "NIO_2009247N19",
+      "year": 2009,
+      "true_wind": 18.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 20.1,
+      "wind_error": 2.1,
+      "abs_wind_error": 2.1,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": false,
+      "head_confidence": 0.5648,
+      "head_probs": [
+        0.5648,
+        0.3794,
+        0.0558
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2009313N12071_PHYAN_0.npy",
+      "cyclone_id": "2009313N11072",
+      "cyclone_name": "PHYAN",
+      "year": 2009,
+      "true_wind": 20.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 25.76,
+      "wind_error": 5.76,
+      "abs_wind_error": 5.76,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": false,
+      "head_confidence": 0.4457,
+      "head_probs": [
+        0.4457,
+        0.3395,
+        0.2148
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2009313N12071_PHYAN_3.npy",
+      "cyclone_id": "2009313N11072",
+      "cyclone_name": "PHYAN",
+      "year": 2009,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 26.36,
+      "wind_error": 1.36,
+      "abs_wind_error": 1.36,
+      "pred_head_idx": 2,
+      "pred_head_name": "Deep Depression (28-33 kts)",
+      "head_correct": false,
+      "head_confidence": 0.3563,
+      "head_probs": [
+        0.33,
+        0.3137,
+        0.3563
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2009345N07085_WARD_0.npy",
+      "cyclone_id": "2009344N06085",
+      "cyclone_name": "WARD",
+      "year": 2009,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 23.18,
+      "wind_error": -1.82,
+      "abs_wind_error": 1.82,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": false,
+      "head_confidence": 0.505,
+      "head_probs": [
+        0.505,
+        0.3536,
+        0.1415
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2009345N07085_WARD_2.npy",
+      "cyclone_id": "2009344N06085",
+      "cyclone_name": "WARD",
+      "year": 2009,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 24.41,
+      "wind_error": -0.59,
+      "abs_wind_error": 0.59,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": false,
+      "head_confidence": 0.5086,
+      "head_probs": [
+        0.5086,
+        0.3506,
+        0.1409
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2010136N09057_BANDU_0.npy",
+      "cyclone_id": "2010136N09057",
+      "cyclone_name": "BANDU",
+      "year": 2010,
+      "true_wind": 15.0,
+      "true_class_idx": 0,
+      "true_class_name": "Low Pressure Area (< 17 kts)",
+      "pred_wind": 23.89,
+      "wind_error": 8.89,
+      "abs_wind_error": 8.89,
+      "pred_head_idx": 2,
+      "pred_head_name": "Deep Depression (28-33 kts)",
+      "head_correct": false,
+      "head_confidence": 0.4391,
+      "head_probs": [
+        0.2256,
+        0.3354,
+        0.4391
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": false
+    },
+    {
+      "filename": "hursat_genesis_2010136N09057_BANDU_3.npy",
+      "cyclone_id": "2010136N09057",
+      "cyclone_name": "BANDU",
+      "year": 2010,
+      "true_wind": 15.0,
+      "true_class_idx": 0,
+      "true_class_name": "Low Pressure Area (< 17 kts)",
+      "pred_wind": 20.61,
+      "wind_error": 5.61,
+      "abs_wind_error": 5.61,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": true,
+      "head_confidence": 0.5198,
+      "head_probs": [
+        0.5198,
+        0.3723,
+        0.1079
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": false
+    },
+    {
+      "filename": "hursat_genesis_2010137N10090_LAILA_0.npy",
+      "cyclone_id": "2010137N10090",
+      "cyclone_name": "LAILA",
+      "year": 2010,
+      "true_wind": 15.0,
+      "true_class_idx": 0,
+      "true_class_name": "Low Pressure Area (< 17 kts)",
+      "pred_wind": 22.86,
+      "wind_error": 7.86,
+      "abs_wind_error": 7.86,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": true,
+      "head_confidence": 0.4466,
+      "head_probs": [
+        0.4466,
+        0.4086,
+        0.1448
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": false
+    },
+    {
+      "filename": "hursat_genesis_2010137N10090_LAILA_3.npy",
+      "cyclone_id": "2010137N10090",
+      "cyclone_name": "LAILA",
+      "year": 2010,
+      "true_wind": 18.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 21.35,
+      "wind_error": 3.35,
+      "abs_wind_error": 3.35,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": false,
+      "head_confidence": 0.5617,
+      "head_probs": [
+        0.5617,
+        0.3686,
+        0.0697
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2010151N14065_PHET_0.npy",
+      "cyclone_id": "2010151N14065",
+      "cyclone_name": "PHET",
+      "year": 2010,
+      "true_wind": 15.0,
+      "true_class_idx": 0,
+      "true_class_name": "Low Pressure Area (< 17 kts)",
+      "pred_wind": 25.14,
+      "wind_error": 10.14,
+      "abs_wind_error": 10.14,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": true,
+      "head_confidence": 0.45,
+      "head_probs": [
+        0.45,
+        0.4236,
+        0.1264
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": false
+    },
+    {
+      "filename": "hursat_genesis_2010151N14065_PHET_3.npy",
+      "cyclone_id": "2010151N14065",
+      "cyclone_name": "PHET",
+      "year": 2010,
+      "true_wind": 18.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 24.36,
+      "wind_error": 6.36,
+      "abs_wind_error": 6.36,
+      "pred_head_idx": 1,
+      "pred_head_name": "Depression (17-27 kts)",
+      "head_correct": true,
+      "head_confidence": 0.4102,
+      "head_probs": [
+        0.3789,
+        0.4102,
+        0.2109
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2010280N18085_MISSING_0.npy",
+      "cyclone_id": "2010280N17085",
+      "cyclone_name": "NIO_2010280N17",
+      "year": 2010,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 31.46,
+      "wind_error": 6.46,
+      "abs_wind_error": 6.46,
+      "pred_head_idx": 2,
+      "pred_head_name": "Deep Depression (28-33 kts)",
+      "head_correct": false,
+      "head_confidence": 0.8301,
+      "head_probs": [
+        0.0414,
+        0.1284,
+        0.8301
+      ],
+      "pred_reg_idx": 2,
+      "pred_reg_name": "Deep Depression (28-33 kts)",
+      "reg_correct": false
+    },
+    {
+      "filename": "hursat_genesis_2010280N18085_MISSING_3.npy",
+      "cyclone_id": "2010280N17085",
+      "cyclone_name": "NIO_2010280N17",
+      "year": 2010,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 28.5,
+      "wind_error": 3.5,
+      "abs_wind_error": 3.5,
+      "pred_head_idx": 2,
+      "pred_head_name": "Deep Depression (28-33 kts)",
+      "head_correct": false,
+      "head_confidence": 0.7405,
+      "head_probs": [
+        0.0813,
+        0.1782,
+        0.7405
+      ],
+      "pred_reg_idx": 2,
+      "pred_reg_name": "Deep Depression (28-33 kts)",
+      "reg_correct": false
+    },
+    {
+      "filename": "hursat_genesis_2010286N18090_MISSING_0.npy",
+      "cyclone_id": "2010286N18090",
+      "cyclone_name": "NIO_2010286N18",
+      "year": 2010,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 21.68,
+      "wind_error": -3.32,
+      "abs_wind_error": 3.32,
+      "pred_head_idx": 1,
+      "pred_head_name": "Depression (17-27 kts)",
+      "head_correct": true,
+      "head_confidence": 0.4207,
+      "head_probs": [
+        0.4041,
+        0.4207,
+        0.1752
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2010286N18090_MISSING_3.npy",
+      "cyclone_id": "2010286N18090",
+      "cyclone_name": "NIO_2010286N18",
+      "year": 2010,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 22.49,
+      "wind_error": -2.51,
+      "abs_wind_error": 2.51,
+      "pred_head_idx": 1,
+      "pred_head_name": "Depression (17-27 kts)",
+      "head_correct": true,
+      "head_confidence": 0.4175,
+      "head_probs": [
+        0.3795,
+        0.4175,
+        0.2031
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2010293N17093_GIRI_0.npy",
+      "cyclone_id": "2010293N17093",
+      "cyclone_name": "GIRI",
+      "year": 2010,
+      "true_wind": 15.0,
+      "true_class_idx": 0,
+      "true_class_name": "Low Pressure Area (< 17 kts)",
+      "pred_wind": 24.43,
+      "wind_error": 9.43,
+      "abs_wind_error": 9.43,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": true,
+      "head_confidence": 0.5204,
+      "head_probs": [
+        0.5204,
+        0.4179,
+        0.0618
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": false
+    },
+    {
+      "filename": "hursat_genesis_2010293N17093_GIRI_2.npy",
+      "cyclone_id": "2010293N17093",
+      "cyclone_name": "GIRI",
+      "year": 2010,
+      "true_wind": 18.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 23.54,
+      "wind_error": 5.54,
+      "abs_wind_error": 5.54,
+      "pred_head_idx": 1,
+      "pred_head_name": "Depression (17-27 kts)",
+      "head_correct": true,
+      "head_confidence": 0.4445,
+      "head_probs": [
+        0.4414,
+        0.4445,
+        0.1141
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    },
+    {
+      "filename": "hursat_genesis_2010341N15082_MISSING_0.npy",
+      "cyclone_id": "2010341N14082",
+      "cyclone_name": "NIO_2010341N14",
+      "year": 2010,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 27.48,
+      "wind_error": 2.48,
+      "abs_wind_error": 2.48,
+      "pred_head_idx": 2,
+      "pred_head_name": "Deep Depression (28-33 kts)",
+      "head_correct": false,
+      "head_confidence": 0.367,
+      "head_probs": [
+        0.2684,
+        0.3646,
+        0.367
+      ],
+      "pred_reg_idx": 2,
+      "pred_reg_name": "Deep Depression (28-33 kts)",
+      "reg_correct": false
+    },
+    {
+      "filename": "hursat_genesis_2010341N15082_MISSING_2.npy",
+      "cyclone_id": "2010341N14082",
+      "cyclone_name": "NIO_2010341N14",
+      "year": 2010,
+      "true_wind": 25.0,
+      "true_class_idx": 1,
+      "true_class_name": "Depression (17-27 kts)",
+      "pred_wind": 25.44,
+      "wind_error": 0.44,
+      "abs_wind_error": 0.44,
+      "pred_head_idx": 0,
+      "pred_head_name": "Low Pressure Area (< 17 kts)",
+      "head_correct": false,
+      "head_confidence": 0.4792,
+      "head_probs": [
+        0.4792,
+        0.4272,
+        0.0935
+      ],
+      "pred_reg_idx": 1,
+      "pred_reg_name": "Depression (17-27 kts)",
+      "reg_correct": true
+    }
+  ]
+}

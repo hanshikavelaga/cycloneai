@@ -1,0 +1,261 @@
+{
+  "audit_title": "CycloneAI Desktop 2000-2015 Satellite Dataset Forensic Audit",
+  "timestamp_utc": "2026-09-10T22:41:00Z",
+  "project_folder": "C:\\Users\\hasin\\Desktop\\cycloneai",
+  "target_period": "2000-2015",
+  "audit_status": "AUDIT_COMPLETE",
+  "data_summary": {
+    "physical_npy_files_total": 456,
+    "verified_ground_truth_observations": 234,
+    "unlabeled_excluded_images": 222,
+    "unique_cyclones_verified": 113,
+    "years_present": [
+      2000,
+      2001,
+      2002,
+      2003,
+      2004,
+      2005,
+      2006,
+      2007,
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2015
+    ],
+    "years_missing": [
+      2014
+    ]
+  },
+  "audit_checks_14_points": {
+    "check_1_available_satellite_image_files": {
+      "status": "PASS",
+      "count": 456,
+      "format": "NumPy .npy arrays in data/processed/satellite/"
+    },
+    "check_2_processed_image_arrays": {
+      "status": "PASS",
+      "count": 456,
+      "dimensions": [
+        128,
+        128
+      ],
+      "channels": 1
+    },
+    "check_3_metadata_csv_files": {
+      "status": "PASS",
+      "files": [
+        {
+          "path": "data/metadata/cyclone_genesis_enhanced_metadata.csv",
+          "rows": 234,
+          "cols": 24
+        },
+        {
+          "path": "data/metadata/cyclone_master_unified_2000_2025.csv",
+          "rows": 9622,
+          "cols": 30
+        },
+        {
+          "path": "data/processed/image_metadata_mapping.csv",
+          "rows": 456,
+          "cols": 21
+        }
+      ]
+    },
+    "check_4_image_metadata_mapping": {
+      "status": "PASS",
+      "matched_rows": 234,
+      "unmatched_rows": 222,
+      "exact_1to1_mapping": true
+    },
+    "check_5_verified_observations_per_year": {
+      "status": "PASS",
+      "annual_counts": {
+        "2000": 12,
+        "2001": 16,
+        "2002": 12,
+        "2003": 14,
+        "2004": 24,
+        "2005": 26,
+        "2006": 24,
+        "2007": 12,
+        "2008": 18,
+        "2009": 16,
+        "2010": 14,
+        "2011": 20,
+        "2012": 8,
+        "2013": 10,
+        "2014": 0,
+        "2015": 8
+      }
+    },
+    "check_6_unique_cyclones_per_year": {
+      "status": "PASS",
+      "annual_cyclones": {
+        "2000": 6,
+        "2001": 6,
+        "2002": 6,
+        "2003": 6,
+        "2004": 10,
+        "2005": 14,
+        "2006": 12,
+        "2007": 6,
+        "2008": 9,
+        "2009": 8,
+        "2010": 7,
+        "2011": 10,
+        "2012": 4,
+        "2013": 5,
+        "2014": 0,
+        "2015": 4
+      }
+    },
+    "check_7_real_labels_and_class_distribution": {
+      "status": "PASS",
+      "label_type": "Continuous ground-truth wind speed (intensity_knots)",
+      "range_knots": [
+        4.0,
+        33.0
+      ],
+      "class_distribution": {
+        "Depression (17-27 kts)": 181,
+        "Low Pressure Area (< 17 kts)": 37,
+        "Deep Depression (28-33 kts)": 16
+      }
+    },
+    "check_8_image_dimensions_dtype_range": {
+      "status": "PASS",
+      "shape": [
+        128,
+        128
+      ],
+      "dtype": "float32",
+      "min_val": 0.0,
+      "max_val": 1.0,
+      "normalization": "Min-Max [0, 1] normalized brightness temperature"
+    },
+    "check_9_missing_corrupt_nan_inf": {
+      "status": "PASS",
+      "missing_files": 0,
+      "corrupt_files": 0,
+      "nan_count": 0,
+      "inf_count": 0,
+      "flat_constant_images": 0
+    },
+    "check_10_duplicate_observations": {
+      "status": "PASS",
+      "duplicate_cyclone_timestamp_pairs": 0,
+      "duplicate_filenames": 0
+    },
+    "check_11_multiple_satellite_sensor_views": {
+      "status": "PASS",
+      "details": "222 excluded images contain alternate sensor views and unverified extracts; none are counted as independent observations in the verified manifest."
+    },
+    "check_12_missing_metadata": {
+      "status": "PASS",
+      "missing_metadata_in_manifest": 0
+    },
+    "check_13_duplicate_cyclone_timestamp_combinations": {
+      "status": "PASS",
+      "count": 0
+    },
+    "check_14_other_data_quality_problems": {
+      "status": "DOCUMENTED",
+      "issues": [
+        "2014 coverage gap (0 NIO HURSAT-B1 passes)",
+        "Class imbalance: Depression represents 77.35% of all samples",
+        "is_genesis_observation is an image tensor presence flag, not a meteorological genesis label"
+      ]
+    }
+  },
+  "recommended_split": {
+    "recommended_strategy": "Chronological Cyclone-Grouped Split (Strategy 1)",
+    "period_coverage": "2000-2015",
+    "total_verified_observations": 234,
+    "total_unique_cyclones": 113,
+    "splits": {
+      "train": {
+        "years": [
+          2000,
+          2001,
+          2002,
+          2003,
+          2004,
+          2005,
+          2006,
+          2007,
+          2008
+        ],
+        "sample_count": 158,
+        "percentage_of_total": 67.52,
+        "unique_cyclones": 75,
+        "class_distribution": {
+          "Low Pressure Area (< 17 kts)": 25,
+          "Depression (17-27 kts)": 121,
+          "Deep Depression (28-33 kts)": 12
+        },
+        "class_percentages": {
+          "Low Pressure Area (< 17 kts)": 15.82,
+          "Depression (17-27 kts)": 76.58,
+          "Deep Depression (28-33 kts)": 7.59
+        }
+      },
+      "validation": {
+        "years": [
+          2009,
+          2010
+        ],
+        "sample_count": 30,
+        "percentage_of_total": 12.82,
+        "unique_cyclones": 15,
+        "class_distribution": {
+          "Low Pressure Area (< 17 kts)": 6,
+          "Depression (17-27 kts)": 23,
+          "Deep Depression (28-33 kts)": 1
+        },
+        "class_percentages": {
+          "Low Pressure Area (< 17 kts)": 20.0,
+          "Depression (17-27 kts)": 76.67,
+          "Deep Depression (28-33 kts)": 3.33
+        }
+      },
+      "test": {
+        "years": [
+          2011,
+          2012,
+          2013,
+          2014,
+          2015
+        ],
+        "sample_count": 46,
+        "percentage_of_total": 19.66,
+        "unique_cyclones": 23,
+        "class_distribution": {
+          "Low Pressure Area (< 17 kts)": 6,
+          "Depression (17-27 kts)": 37,
+          "Deep Depression (28-33 kts)": 3
+        },
+        "class_percentages": {
+          "Low Pressure Area (< 17 kts)": 13.04,
+          "Depression (17-27 kts)": 80.43,
+          "Deep Depression (28-33 kts)": 6.52
+        }
+      }
+    },
+    "cyclone_overlap_verification": {
+      "train_val_overlap_count": 0,
+      "train_test_overlap_count": 0,
+      "val_test_overlap_count": 0,
+      "zero_leakage_guaranteed": true
+    },
+    "scientific_rationale": "Strategy 1 preserves historical temporal progression while maintaining representation of all 3 intensity classes in Train, Val, and Test splits. Zero cyclone overlap prevents spatial/temporal data leakage.",
+    "dataset_limitations": [
+      "Year 2014 contains 0 HURSAT observations in the North Indian Ocean.",
+      "Deep Depression class is rare (16 samples total, 6.84%), requiring stratification or class weighting.",
+      "Zero observations exist prior to track start; model evaluates contemporaneous intensity development."
+    ]
+  }
+}

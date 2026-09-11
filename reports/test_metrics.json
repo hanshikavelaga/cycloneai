@@ -1,0 +1,56 @@
+{
+  "test_samples": 46,
+  "test_cyclones": 23,
+  "test_seasons": [
+    2011,
+    2012,
+    2013,
+    2015
+  ],
+  "accuracy": 0.2826,
+  "balanced_accuracy": 0.2102,
+  "macro_precision": 0.2734,
+  "macro_recall": 0.2102,
+  "macro_f1": 0.187,
+  "weighted_f1": 0.3583,
+  "per_class_metrics": {
+    "Low Pressure Area (< 17 kts)": {
+      "precision": 0.087,
+      "recall": 0.3333,
+      "f1": 0.1379,
+      "support": 6
+    },
+    "Depression (17-27 kts)": {
+      "precision": 0.7333,
+      "recall": 0.2973,
+      "f1": 0.4231,
+      "support": 37
+    },
+    "Deep Depression (28-33 kts)": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 3
+    }
+  },
+  "mae_knots": 3.68,
+  "rmse_knots": 5.37,
+  "r2_score": -0.2965,
+  "confusion_matrix": [
+    [
+      2,
+      4,
+      0
+    ],
+    [
+      18,
+      11,
+      8
+    ],
+    [
+      3,
+      0,
+      0
+    ]
+  ]
+}

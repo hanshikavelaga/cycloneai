@@ -1,0 +1,13 @@
+{
+  "class_to_idx": {
+    "Low Pressure Area (< 17 kts)": 0,
+    "Depression (17-27 kts)": 1,
+    "Deep Depression (28-33 kts)": 2
+  },
+  "idx_to_class": {
+    "0": "Low Pressure Area (< 17 kts)",
+    "1": "Depression (17-27 kts)",
+    "2": "Deep Depression (28-33 kts)"
+  },
+  "description": "Official India Meteorological Department (IMD) cyclone genesis intensity stages."
+}

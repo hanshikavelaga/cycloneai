@@ -1,84 +1,106 @@
-import os
-import torch
-import numpy as np
-from PIL import Image
-from src.models.classification.model import CycloneMultiTaskCNN
+"""
+CycloneAI Backend Detection Service
+===================================
+Production integration for satellite-based cyclone pattern classification and intensity estimation.
+Powered by the 5-Fold Soft-Voting Ensemble (Approach A - Aggressive CE weights).
+Directly computes predictions on real satellite data; zero hardcoded mock fallbacks.
+"""
 
-# Define model paths
-MODEL_PATH = "./models/classification/multi_task_cnn.pth"
-CLASSES = ["No Cyclone", "Shear", "Curved Band", "CDO", "Eye"]
+import os
+import sys
+import logging
+from typing import Dict, Any, Optional
+
+# Ensure repository root is on sys.path
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
+
+from models.satellite.inference import (
+    EnsembleSatellitePredictor,
+    DEFAULT_ENSEMBLE_CHECKPOINTS,
+    CLASS_NAMES,
+)
+
+logger = logging.getLogger("cycloneai.detection_service")
+
 
 class DetectionService:
-    def __init__(self):
-        self.model = CycloneMultiTaskCNN()
-        if os.path.exists(MODEL_PATH):
-            try:
-                # Load weights onto CPU (ideal for local/hackathon demo setups)
-                self.model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device('cpu')))
-                self.model.eval()
-                print(f"DetectionService: Loaded model weights from {MODEL_PATH}")
-            except Exception as e:
-                print(f"DetectionService: Error loading weights: {e}")
-        else:
-            print(f"DetectionService: Warning: Weight file not found at {MODEL_PATH}. Running uninitialized.")
-        
-        self.model.eval()
+    """
+    Backend service wrapping the production 5-fold satellite CNN ensemble.
+    Accepts .npy arrays or standard image files (.png, .jpg), runs soft-voting,
+    and returns IMD classification, wind speed, Dvorak T-number, and estimated pressure.
+    """
 
-    def run_inference(self, image_path: str):
+    def __init__(self, checkpoint_paths: Optional[list] = None):
+        self.checkpoint_paths = checkpoint_paths or DEFAULT_ENSEMBLE_CHECKPOINTS
+        self.predictor = None
+        self._initialize_predictor()
+
+    def _initialize_predictor(self):
+        """Validates checkpoint files and loads the 5-fold ensemble into memory."""
+        missing = [p for p in self.checkpoint_paths if not os.path.exists(p)]
+        if missing:
+            err_msg = (
+                f"DetectionService initialization error: The following ensemble checkpoint(s) "
+                f"were not found: {missing}. Please ensure model weights are tracked and available."
+            )
+            logger.error(err_msg)
+            raise FileNotFoundError(err_msg)
+
+        try:
+            self.predictor = EnsembleSatellitePredictor(checkpoint_paths=self.checkpoint_paths)
+            print(f"DetectionService: Production 5-fold ensemble loaded successfully ({len(self.predictor.models)} models).")
+        except Exception as e:
+            logger.error(f"DetectionService: Failed to instantiate EnsembleSatellitePredictor: {e}")
+            raise RuntimeError(f"Failed to load satellite ensemble predictor: {e}") from e
+
+    def run_inference(self, image_path: str) -> Dict[str, Any]:
         """
-        Loads satellite image, preprocesses it, runs PyTorch CNN,
-        and returns Dvorak classification + estimated intensity parameters.
+        Loads satellite image, runs 5-fold soft-voting ensemble CNN,
+        and returns IMD classification + estimated intensity parameters.
+        Preserves backward compatibility with frontend contract while eliminating hardcoded stubs.
         """
         if not os.path.exists(image_path):
             raise FileNotFoundError(f"Satellite image not found: {image_path}")
 
+        if self.predictor is None:
+            self._initialize_predictor()
+
         try:
-            # Preprocess image
-            img = Image.open(image_path).convert("RGB")
-            img = img.resize((128, 128))
-            img_data = np.array(img, dtype=np.float32) / 255.0  # Normalize to 0-1
-            
-            # Rearrange channels: HWC -> CHW (Pytorch format)
-            img_data = np.transpose(img_data, (2, 0, 1))
-            input_tensor = torch.tensor(img_data).unsqueeze(0)  # Shape: (1, 3, 128, 128)
+            res = self.predictor.predict_file(image_path)
+            pattern_type = res["predicted_class"]
+            probs = res.get("probabilities", {})
+            confidence = float(probs.get(pattern_type, 0.0))
+            wind_speed = float(res["predicted_wind_speed_knots"])
 
-            # Run forward pass without gradients
-            with torch.no_grad():
-                class_logits, reg_outputs = self.model(input_tensor)
+            # Empirical Dvorak T-number derivation based on continuous wind speed (IMD standards)
+            if "Low Pressure" in pattern_type or wind_speed < 17.0:
+                t_number = 1.0
+            elif "Depression" in pattern_type and "Deep" not in pattern_type:
+                t_number = max(1.5, min(2.0, round((wind_speed - 17.0) / 10.0 * 0.5 + 1.5, 1)))
+            else:
+                t_number = max(2.0, min(3.0, round((wind_speed - 28.0) / 6.0 * 0.5 + 2.5, 1)))
 
-            # Apply softmax to calculate confidence scores
-            probs = torch.softmax(class_logits, dim=1).squeeze(0)
-            pred_class_idx = torch.argmax(probs).item()
-            confidence = probs[pred_class_idx].item()
-            pattern_type = CLASSES[pred_class_idx]
-
-            # Parse continuous outputs (clipped to realistic ranges)
-            wind_speed = max(15.0, float(reg_outputs[0, 0].item() * 10.0 + 50.0))  # Scale dummy outputs
-            t_number = max(1.0, min(8.0, float(reg_outputs[0, 1].item() + 3.0)))
-
-            # Dvorak intensity categories corresponding to wind speed
-            # If pattern is No Cyclone, force wind speeds to low baseline
-            if pattern_type == "No Cyclone":
-                wind_speed = min(wind_speed, 25.0)
-                t_number = 0.0
+            # Empirical central pressure estimation (Atkinson & Holliday formula approximation)
+            estimated_pressure_hpa = round(1010.0 - (wind_speed * 0.65), 1)
 
             return {
                 "pattern_type": pattern_type,
                 "confidence": round(confidence, 3),
                 "wind_speed_knots": round(wind_speed, 1),
                 "dvorak_t_number": round(t_number, 1),
-                "estimated_pressure_hpa": round(1010.0 - (wind_speed * 0.65), 1)  # Empirical relationship
+                "estimated_pressure_hpa": estimated_pressure_hpa,
+                "probabilities": probs,
+                "ensemble_size": res.get("ensemble_size", 5),
+                "inference_mode": res.get("inference_mode", "ensemble_soft_vote"),
+                "latency_ms": res.get("latency_ms", 0.0),
             }
         except Exception as e:
-            print(f"DetectionService: Inference error: {e}")
-            # Fallback mock response in case of corrupt images or pipeline blocks
-            return {
-                "pattern_type": "Curved Band",
-                "confidence": 0.72,
-                "wind_speed_knots": 45.0,
-                "dvorak_t_number": 2.5,
-                "estimated_pressure_hpa": 990.0
-            }
+            logger.error(f"DetectionService inference error on {image_path}: {e}")
+            # Do NOT return hardcoded mock data: re-raise so callers receive true error status
+            raise RuntimeError(f"DetectionService inference failed on {image_path}: {e}") from e
+
 
 # Instantiate singleton
 detection_service = DetectionService()

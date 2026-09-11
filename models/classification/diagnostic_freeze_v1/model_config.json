@@ -1,0 +1,40 @@
+{
+  "model_name": "satellite_cnn_best",
+  "architecture": "ResidualSatelliteCNN",
+  "input_shape": [
+    1,
+    128,
+    128
+  ],
+  "num_classes": 3,
+  "num_regression_targets": 1,
+  "regression_target_name": "intensity_knots",
+  "loss_function": "CrossEntropyLoss(weighted) + 0.1 * MSELoss()",
+  "normalization": "MinMax [0.0, 1.0] (Infrared Brightness Temperature)",
+  "device": "cpu",
+  "total_parameters": 629412,
+  "training_split": {
+    "seasons": "2000-2010",
+    "samples": 188,
+    "cyclones": 90
+  },
+  "validation_split": {
+    "seasons": "2011-2012",
+    "samples": 28,
+    "cyclones": 14,
+    "best_epoch": 1,
+    "val_mae_knots": 4.03,
+    "val_accuracy": 0.2143
+  },
+  "held_out_test_split": {
+    "seasons": [
+      2013,
+      2015
+    ],
+    "samples": 18,
+    "cyclones": 9,
+    "test_mae_knots": 3.52,
+    "test_rmse_knots": 4.33
+  },
+  "random_seed": 42
+}

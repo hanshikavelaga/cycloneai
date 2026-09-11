@@ -56,7 +56,11 @@ storage/processed/*
 !storage/processed/.gitkeep
 data/raw/satellite/*
 !data/raw/satellite/.gitkeep
+data/processed/satellite/*
+!data/processed/satellite/.gitkeep
 
-# Model weights
+# Model weights (ignore general checkpoints, track production ensemble)
 models/**/*.pth
 !models/**/*.gitkeep
+!models/consolidated_cv/A_fold_*.pth
+!models/consolidated_cv/final_model.pth

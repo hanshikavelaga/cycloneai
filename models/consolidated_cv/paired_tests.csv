@@ -1,0 +1,7 @@
+Comparison,Macro F1 t-stat,Macro F1 p-val,Macro F1 Wilcoxon p-val,Balanced Acc t-stat,Balanced Acc p-val,Balanced Acc Wilcoxon p-val,Significant (p < 0.05)
+A vs B,0.1418,0.8941,0.625,1.8133,0.144,0.25,False
+A vs C,0.9038,0.4172,0.4375,1.4574,0.2187,0.1875,False
+A vs D,4.3143,0.0125,0.0625,3.3382,0.0289,0.0625,True
+B vs C,0.3832,0.7211,0.75,0.0371,0.9722,1.0,False
+B vs D,2.3793,0.076,0.125,2.4302,0.072,0.125,False
+C vs D,4.0055,0.0161,0.0625,2.6674,0.056,0.0625,True

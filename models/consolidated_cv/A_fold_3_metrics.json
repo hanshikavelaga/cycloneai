@@ -1,0 +1,49 @@
+{
+  "accuracy": 0.6316,
+  "balanced_accuracy": 0.5378,
+  "macro_precision": 0.5669,
+  "macro_recall": 0.5378,
+  "macro_f1": 0.5434,
+  "per_class": {
+    "Low Pressure Area (< 17 kts)": {
+      "precision": 0.4615,
+      "recall": 0.6,
+      "f1": 0.5217,
+      "support": 10
+    },
+    "Depression (17-27 kts)": {
+      "precision": 0.7391,
+      "recall": 0.68,
+      "f1": 0.7083,
+      "support": 25
+    },
+    "Deep Depression (28-33 kts)": {
+      "precision": 0.5,
+      "recall": 0.3333,
+      "f1": 0.4,
+      "support": 3
+    }
+  },
+  "wind_mae": 6.9358,
+  "wind_rmse": 8.3325,
+  "confusion_matrix": [
+    [
+      6,
+      4,
+      0
+    ],
+    [
+      7,
+      17,
+      1
+    ],
+    [
+      0,
+      2,
+      1
+    ]
+  ],
+  "best_epoch": 9,
+  "fold": 3,
+  "approach": "A"
+}

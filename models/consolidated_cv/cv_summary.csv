@@ -1,0 +1,5 @@
+Approach,Description,Macro F1 Mean,Macro F1 Std,Balanced Acc Mean,Balanced Acc Std,Accuracy Mean,Accuracy Std,Wind MAE Mean,Wind MAE Std,Low Recall Mean,Dep Recall Mean,Deep Dep Recall Mean (All),Deep Dep Recall (Sup >= 3),Deep Dep Recall (Sup < 3)
+A,Aggressive Inverse-Frequency CE,0.4736,0.0768,0.537,0.116,0.6425,0.1148,7.521,4.7529,0.42,0.6977,0.4933,0.4889,0.5
+B,Smoothed CE (1/sqrt(N_c)),0.4695,0.1184,0.4945,0.123,0.7765,0.0666,8.0395,7.9817,0.0,0.9634,0.52,0.5333,0.5
+C,"Focal Loss (gamma=2.0, alpha=1/sqrt(N_c))",0.4574,0.049,0.4936,0.0949,0.739,0.0772,4.7308,0.9048,0.14,0.8874,0.4533,0.4222,0.5
+D,Regression Head (Post-Hoc Derived Category),0.3327,0.0511,0.3617,0.0465,0.7609,0.0607,2.9587,0.5451,0.0,0.9784,0.1067,0.1778,0.0

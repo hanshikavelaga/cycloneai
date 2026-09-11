@@ -1,0 +1,65 @@
+{
+  "models_combined": 5,
+  "approach": "Approach A (Aggressive CE weights)",
+  "folds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "test_samples": 46,
+  "accuracy": 0.6087,
+  "balanced_accuracy": 0.4565,
+  "macro_precision": 0.3579,
+  "macro_recall": 0.4565,
+  "macro_f1": 0.381,
+  "wind_mae": 6.6852,
+  "wind_rmse": 7.6561,
+  "per_class": {
+    "Low Pressure Area (< 17 kts)": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 6
+    },
+    "Depression (17-27 kts)": {
+      "precision": 0.7879,
+      "recall": 0.7027,
+      "f1": 0.7429,
+      "support": 37
+    },
+    "Deep Depression (28-33 kts)": {
+      "precision": 0.2857,
+      "recall": 0.6667,
+      "f1": 0.4,
+      "support": 3
+    }
+  },
+  "confusion_matrix": [
+    [
+      0,
+      6,
+      0
+    ],
+    [
+      6,
+      26,
+      5
+    ],
+    [
+      0,
+      1,
+      2
+    ]
+  ],
+  "comparison_vs_single_model": {
+    "single_accuracy": 0.413,
+    "single_balanced_accuracy": 0.3198,
+    "single_macro_f1": 0.2764,
+    "delta_accuracy": 0.1957,
+    "delta_balanced_accuracy": 0.1367,
+    "delta_macro_f1": 0.1046,
+    "improves": true
+  }
+}
